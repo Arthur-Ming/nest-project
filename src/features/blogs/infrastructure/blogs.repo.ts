@@ -11,7 +11,7 @@ export class BlogsRepo {
   constructor(@InjectModel(Blog.name) private blogModel: Model<Blog>) {}
   async add(createBlogDTO: CreateBlogDto) {
     const newBlog = await this.blogModel.create(createBlogDTO);
-    return newBlog;
+    return newBlog._id.toString();
   }
   async update(blogId: string, input: UpdateBlogDto): Promise<boolean> {
     const updateResult = await this.blogModel.updateOne(
@@ -23,7 +23,9 @@ export class BlogsRepo {
 
     return updateResult.matchedCount === 1;
   }
-
+  existsById(blogId: string) {
+    return this.blogModel.exists({ _id: new ObjectId(blogId) });
+  }
   async remove(blogId: string): Promise<boolean> {
     const deleteResult = await this.blogModel.deleteOne({ _id: new ObjectId(blogId) });
     return deleteResult.deletedCount === 1;

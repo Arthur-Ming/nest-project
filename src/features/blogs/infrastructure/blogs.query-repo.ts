@@ -42,4 +42,10 @@ export class BlogsQueryRepo {
       items: blogs.map((blog) => blogsMapToOutput(blog)),
     };
   }
+
+  async findById(blogId: string) {
+    const blog = await this.blogModel.findById(blogId);
+
+    return blog ? blogsMapToOutput(blog) : null;
+  }
 }

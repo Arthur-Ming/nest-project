@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PostsRepo } from '../infrastructure/posts.repo';
-import { AddPostInputModel } from '../api/models/input/add-post.input.model';
+import { AddPostInputModel, WithBlogId } from '../api/models/input/add-post.input.model';
 import { ObjectId } from 'mongodb';
 import { UpdatePostInputModel } from '../api/models/input/update-post.input.model';
 import { mapToUpdatePostDto } from './utils/map-to-update-post-dto';
@@ -9,7 +9,7 @@ import { mapToUpdatePostDto } from './utils/map-to-update-post-dto';
 export class PostsService {
   constructor(private postsRepo: PostsRepo) {}
 
-  async addPost(addPostInputModel: AddPostInputModel): Promise<{ id: string }> {
+  async addPost(addPostInputModel: WithBlogId<AddPostInputModel>): Promise<{ id: string }> {
     const addedPostId = await this.postsRepo.add({
       title: addPostInputModel.title,
       shortDescription: addPostInputModel.shortDescription,

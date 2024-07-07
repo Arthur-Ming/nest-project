@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { PostsService } from '../application/posts.service';
 import { PostsQueryRepo } from '../infrastructure/posts.query-repo';
-import { AddPostInputModel } from './models/input/add-post.input.model';
+import { AddPostInputModel, WithBlogId } from './models/input/add-post.input.model';
 import { PostsQueryParamsInputModel } from './models/input/posts-query-params.input.model';
 import { SortDirections } from '../../../common/types/interfaces';
 import { UpdateBlogInputModel } from '../../blogs/api/models/input/update-blog.input.model';
@@ -52,7 +52,7 @@ export class PostsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async addBlog(@Body() addPostInputModel: AddPostInputModel) {
+  async addBlog(@Body() addPostInputModel: WithBlogId<AddPostInputModel>) {
     const { id } = await this.postsService.addPost(addPostInputModel);
     return await this.postsQueryRepo.findById(id);
   }

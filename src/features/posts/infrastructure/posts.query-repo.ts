@@ -7,7 +7,7 @@ import { LikeStatus, PostOutputModel, WithLikesInfo } from '../api/models/output
 import { BlogsQueryParams } from '../../blogs/api/models/input/blogs-query-params.input.model';
 import { PostsQueryParamsInputModel } from '../api/models/input/posts-query-params.input.model';
 import { Pagination } from '../../../common/types';
-import { BlogOutputData, blogsMapToOutput } from '../../blogs/api/models/output/blogs.output.model';
+
 const filter = ({ searchNameTerm }: BlogsQueryParams) => {
   return searchNameTerm
     ? {
@@ -130,7 +130,7 @@ export class PostsQueryRepo {
   };
 
   async findAll(
-    queryParams: BlogsQueryParams,
+    queryParams: PostsQueryParamsInputModel,
     blogId?: string
   ): Promise<Pagination<WithLikesInfo<PostOutputModel>[]>> {
     const posts = await this.postModel.aggregate([
