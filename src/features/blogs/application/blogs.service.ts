@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BlogsRepo } from '../infrastructure/blogs.repo';
 import { AddBlogInputModel } from '../api/models/input/add-blog.input.model';
 import { UpdateBlogInputModel } from '../api/models/input/update-blog.input.model';
@@ -24,11 +24,6 @@ export class BlogsService {
   }
 
   async addPostSpecificBlog(blogId: string, addPostInputModel: AddPostInputModel) {
-    const existsBlog = await this.blogsRepo.existsById(blogId);
-
-    if (!existsBlog) {
-      throw new HttpException(`Blog with id ${blogId} not found`, HttpStatus.NOT_FOUND);
-    }
     const { id } = await this.postsService.addPost({
       ...addPostInputModel,
       blogId,
@@ -36,22 +31,12 @@ export class BlogsService {
     return id;
   }
   async updateBlog(blogId: string, updateBlogModel: UpdateBlogInputModel) {
-    const existsBlog = await this.blogsRepo.existsById(blogId);
-
-    if (!existsBlog) {
-      throw new HttpException(`Blog with id ${blogId} not found`, HttpStatus.NOT_FOUND);
-    }
     const updateBlogDTO = mapToUpdateBlogDto(updateBlogModel);
 
     await this.blogsRepo.update(blogId, updateBlogDTO);
   }
 
   async deleteBlog(blogId: string) {
-    const existsBlog = await this.blogsRepo.existsById(blogId);
-
-    if (!existsBlog) {
-      throw new HttpException(`Blog with id ${blogId} not found`, HttpStatus.NOT_FOUND);
-    }
     await this.blogsRepo.remove(blogId);
   }
 }
