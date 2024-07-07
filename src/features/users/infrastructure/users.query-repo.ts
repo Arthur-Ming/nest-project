@@ -5,28 +5,37 @@ import { Model } from 'mongoose';
 import { Pagination } from '../../../common/types';
 import { UsersOutputModel } from '../api/models/output/users.output.model';
 import { userMapToOutput } from '../application/utils/user-map-to-output';
-import { QueryParamsDTO } from '../../../common/types/interfaces';
 
-const filter = ({ searchNameTerm }: QueryParamsDTO) => {
-  return searchNameTerm
-    ? {
-        name: {
-          $regex: searchNameTerm,
+import { UsersQueryParamsDto } from '../application/dto/users-query-params.dto';
+
+const filter = ({ searchEmailTerm, searchLoginTerm }: UsersQueryParamsDto) => {
+  return {
+    $or: [
+      {
+        login: {
+          $regex: searchLoginTerm,
           $options: 'i',
         },
-      }
-    : {};
+      },
+      {
+        email: {
+          $regex: searchEmailTerm,
+          $options: 'i',
+        },
+      },
+    ],
+  };
 };
 
 @Injectable()
 export class UsersQueryRepo {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  getTotalCount = async (queryParams: QueryParamsDTO) => {
+  getTotalCount = async (queryParams: UsersQueryParamsDto) => {
     return this.userModel.countDocuments(filter(queryParams));
   };
 
-  async findAll(queryParams: QueryParamsDTO): Promise<Pagination<UsersOutputModel[]>> {
+  async findAll(queryParams: UsersQueryParamsDto): Promise<Pagination<UsersOutputModel[]>> {
     const users = await this.userModel.find(
       filter(queryParams),
       {},
