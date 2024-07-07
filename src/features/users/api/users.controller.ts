@@ -14,6 +14,7 @@ import { UsersQueryRepo } from '../infrastructure/users.query-repo';
 import { UsersInputBody } from './models/input/users.input.model';
 import { UsersQueryParamsInputModel } from './models/input/users-query-params.input.model';
 import { SortDirections } from '../../../common/types/interfaces';
+import { setPagination } from '../../../utils/set-pagination';
 
 @Controller('users')
 export class UsersController {
@@ -27,21 +28,7 @@ export class UsersController {
     @Query()
     queryParams: UsersQueryParamsInputModel
   ) {
-    const {
-      searchNameTerm = '',
-      sortBy = 'createdAt',
-      sortDirection = SortDirections.desc,
-      pageNumber = 1,
-      pageSize = 10,
-    } = queryParams;
-
-    return this.usersQueryRepo.findAll({
-      searchNameTerm,
-      sortBy,
-      sortDirection,
-      pageNumber,
-      pageSize,
-    });
+    return this.usersQueryRepo.findAll(setPagination(queryParams));
   }
   @Post()
   @HttpCode(HttpStatus.CREATED)

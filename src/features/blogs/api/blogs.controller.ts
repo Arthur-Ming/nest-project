@@ -19,6 +19,7 @@ import { SortDirections } from '../../../common/types/interfaces';
 import { AddPostInputModel } from '../../posts/api/models/input/add-post.input.model';
 import { PostsQueryRepo } from '../../posts/infrastructure/posts.query-repo';
 import { PostsQueryParamsInputModel } from '../../posts/api/models/input/posts-query-params.input.model';
+import { setPagination } from '../../../utils/set-pagination';
 
 @Controller('blogs')
 export class BlogsController {
@@ -32,21 +33,7 @@ export class BlogsController {
     @Query()
     queryParams: BlogsQueryParams
   ) {
-    const {
-      searchNameTerm = '',
-      sortBy = 'createdAt',
-      sortDirection = SortDirections.desc,
-      pageNumber = 1,
-      pageSize = 10,
-    } = queryParams;
-
-    return this.blogsQueryRepo.findAll({
-      searchNameTerm,
-      sortBy,
-      sortDirection,
-      pageNumber,
-      pageSize,
-    });
+    return this.blogsQueryRepo.findAll(setPagination(queryParams));
   }
 
   @Get(':id')
@@ -61,24 +48,7 @@ export class BlogsController {
     @Query()
     queryParams: PostsQueryParamsInputModel
   ) {
-    const {
-      searchNameTerm = '',
-      sortBy = 'createdAt',
-      sortDirection = SortDirections.desc,
-      pageNumber = 1,
-      pageSize = 10,
-    } = queryParams;
-
-    return await this.postsQueryRepo.findAll(
-      {
-        searchNameTerm,
-        sortBy,
-        sortDirection,
-        pageNumber,
-        pageSize,
-      },
-      id
-    );
+    return await this.postsQueryRepo.findAll(setPagination(queryParams), id);
   }
   @Post()
   @HttpCode(HttpStatus.CREATED)

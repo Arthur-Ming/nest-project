@@ -14,9 +14,9 @@ import { PostsService } from '../application/posts.service';
 import { PostsQueryRepo } from '../infrastructure/posts.query-repo';
 import { AddPostInputModel, WithBlogId } from './models/input/add-post.input.model';
 import { PostsQueryParamsInputModel } from './models/input/posts-query-params.input.model';
-import { SortDirections } from '../../../common/types/interfaces';
-import { UpdateBlogInputModel } from '../../blogs/api/models/input/update-blog.input.model';
+
 import { UpdatePostInputModel } from './models/input/update-post.input.model';
+import { setPagination } from '../../../utils/set-pagination';
 
 @Controller('posts')
 export class PostsController {
@@ -29,20 +29,7 @@ export class PostsController {
     @Query()
     queryParams: PostsQueryParamsInputModel
   ) {
-    const {
-      searchNameTerm = '',
-      sortBy = 'createdAt',
-      sortDirection = SortDirections.desc,
-      pageNumber = 1,
-      pageSize = 10,
-    } = queryParams;
-    return await this.postsQueryRepo.findAll({
-      searchNameTerm,
-      sortBy,
-      sortDirection,
-      pageNumber,
-      pageSize,
-    });
+    return await this.postsQueryRepo.findAll(setPagination(queryParams));
   }
 
   @Get(':id')
