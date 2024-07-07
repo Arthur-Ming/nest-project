@@ -7,13 +7,10 @@ import { LikeStatus, PostOutputModel, WithLikesInfo } from '../api/models/output
 import { Pagination } from '../../../common/types';
 import { QueryParamsDTO } from '../../../common/types/interfaces';
 
-const filter = ({ searchNameTerm }: QueryParamsDTO) => {
-  return searchNameTerm
+const filter = (blogId?: string) => {
+  return blogId
     ? {
-        name: {
-          $regex: searchNameTerm,
-          $options: 'i',
-        },
+        blogId: new ObjectId(blogId),
       }
     : {};
 };
@@ -110,8 +107,8 @@ export class PostsQueryRepo {
       },
     ];
   };
-  getTotalCount = async (queryParams: QueryParamsDTO) => {
-    return this.postModel.countDocuments(filter(queryParams));
+  getTotalCount = async (blogId?: string) => {
+    return this.postModel.countDocuments(filter(blogId));
   };
   findById = async (postId: string /*, requestUserId?: string*/) => {
     const posts = await this.postModel.aggregate([
@@ -141,7 +138,7 @@ export class PostsQueryRepo {
       { $skip: (queryParams.pageNumber - 1) * queryParams.pageSize },
       { $limit: queryParams.pageSize },
     ]);
-    const totalCount = await this.getTotalCount(queryParams);
+    const totalCount = await this.getTotalCount(blogId);
 
     return {
       pagesCount: Math.ceil(totalCount / queryParams.pageSize),
