@@ -2,13 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../domain/users.entity';
 import { Model } from 'mongoose';
-import { UsersQueryParamsInputModel } from '../api/models/input/users-query-params.input.model';
 import { Pagination } from '../../../common/types';
 import { UsersOutputModel } from '../api/models/output/users.output.model';
-import { BlogsQueryParams } from '../../blogs/api/models/input/blogs-query-params.input.model';
 import { userMapToOutput } from '../application/utils/user-map-to-output';
+import { QueryParamsDTO } from '../../../common/types/interfaces';
 
-const filter = ({ searchNameTerm }: BlogsQueryParams) => {
+const filter = ({ searchNameTerm }: QueryParamsDTO) => {
   return searchNameTerm
     ? {
         name: {
@@ -23,11 +22,11 @@ const filter = ({ searchNameTerm }: BlogsQueryParams) => {
 export class UsersQueryRepo {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  getTotalCount = async (queryParams: UsersQueryParamsInputModel) => {
+  getTotalCount = async (queryParams: QueryParamsDTO) => {
     return this.userModel.countDocuments(filter(queryParams));
   };
 
-  async findAll(queryParams: UsersQueryParamsInputModel): Promise<Pagination<UsersOutputModel[]>> {
+  async findAll(queryParams: QueryParamsDTO): Promise<Pagination<UsersOutputModel[]>> {
     const users = await this.userModel.find(
       filter(queryParams),
       {},

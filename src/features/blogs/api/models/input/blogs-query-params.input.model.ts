@@ -1,3 +1,3 @@
-import { QueryParams } from '../../../../../common/types/interfaces';
+import { InputQueryParams } from '../../../../../common/types/interfaces';
 
-export interface BlogsQueryParams extends QueryParams {}
+export interface BlogsQueryParams extends InputQueryParams {}

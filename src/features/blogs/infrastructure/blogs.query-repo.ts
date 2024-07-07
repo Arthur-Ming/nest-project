@@ -3,9 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Blog } from '../domain/blogs.entity';
 import { Model } from 'mongoose';
 import { BlogOutputData, blogsMapToOutput } from '../api/models/output/blogs.output.model';
-import { BlogsQueryParams } from '../api/models/input/blogs-query-params.input.model';
 import { Pagination } from '../../../common/types';
-const filter = ({ searchNameTerm }: BlogsQueryParams) => {
+import { QueryParamsDTO } from '../../../common/types/interfaces';
+const filter = ({ searchNameTerm }: QueryParamsDTO) => {
   return searchNameTerm
     ? {
         name: {
@@ -19,10 +19,10 @@ const filter = ({ searchNameTerm }: BlogsQueryParams) => {
 export class BlogsQueryRepo {
   constructor(@InjectModel(Blog.name) private blogModel: Model<Blog>) {}
 
-  getTotalCount = async (queryParams: BlogsQueryParams) => {
+  getTotalCount = async (queryParams: QueryParamsDTO) => {
     return this.blogModel.countDocuments(filter(queryParams));
   };
-  async findAll(queryParams: BlogsQueryParams): Promise<Pagination<BlogOutputData[]>> {
+  async findAll(queryParams: QueryParamsDTO): Promise<Pagination<BlogOutputData[]>> {
     const blogs = await this.blogModel.find(
       filter(queryParams),
       {},

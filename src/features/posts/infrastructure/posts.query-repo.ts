@@ -4,11 +4,10 @@ import { Post, PostDocument } from '../domain/posts.entity';
 import { Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import { LikeStatus, PostOutputModel, WithLikesInfo } from '../api/models/output/post.output.model';
-import { BlogsQueryParams } from '../../blogs/api/models/input/blogs-query-params.input.model';
-import { PostsQueryParamsInputModel } from '../api/models/input/posts-query-params.input.model';
 import { Pagination } from '../../../common/types';
+import { QueryParamsDTO } from '../../../common/types/interfaces';
 
-const filter = ({ searchNameTerm }: BlogsQueryParams) => {
+const filter = ({ searchNameTerm }: QueryParamsDTO) => {
   return searchNameTerm
     ? {
         name: {
@@ -111,7 +110,7 @@ export class PostsQueryRepo {
       },
     ];
   };
-  getTotalCount = async (queryParams: PostsQueryParamsInputModel) => {
+  getTotalCount = async (queryParams: QueryParamsDTO) => {
     return this.postModel.countDocuments(filter(queryParams));
   };
   findById = async (postId: string /*, requestUserId?: string*/) => {
@@ -130,7 +129,7 @@ export class PostsQueryRepo {
   };
 
   async findAll(
-    queryParams: PostsQueryParamsInputModel,
+    queryParams: QueryParamsDTO,
     blogId?: string
   ): Promise<Pagination<WithLikesInfo<PostOutputModel>[]>> {
     const posts = await this.postModel.aggregate([
