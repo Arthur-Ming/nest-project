@@ -29,4 +29,8 @@ export class PostsRepo {
 
     return updateResult.matchedCount === 1;
   }
+
+  existsById(id: string) {
+    return this.postModel.exists({ _id: new ObjectId(id) });
+  }
 }

@@ -18,4 +18,7 @@ export class UsersRepo {
     const deleteResult = await this.userModel.deleteOne({ _id: new ObjectId(userId) });
     return deleteResult.deletedCount === 1;
   }
+  existsById(id: string) {
+    return this.userModel.exists({ _id: new ObjectId(id) });
+  }
 }

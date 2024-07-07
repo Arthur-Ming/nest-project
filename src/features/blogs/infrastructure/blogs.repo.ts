@@ -23,8 +23,8 @@ export class BlogsRepo {
 
     return updateResult.matchedCount === 1;
   }
-  existsById(blogId: string) {
-    return this.blogModel.exists({ _id: new ObjectId(blogId) });
+  existsById(id: string) {
+    return this.blogModel.exists({ _id: new ObjectId(id) });
   }
   async remove(blogId: string): Promise<boolean> {
     const deleteResult = await this.blogModel.deleteOne({ _id: new ObjectId(blogId) });
