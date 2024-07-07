@@ -16,7 +16,6 @@ import { BlogsQueryRepo } from '../infrastructure/blogs.query-repo';
 import { BlogsQueryParams } from './models/input/blogs-query-params.input.model';
 import { AddBlogInputModel } from './models/input/add-blog.input.model';
 import { UpdateBlogInputModel } from './models/input/update-blog.input.model';
-import { SortDirections } from '../../../common/types/interfaces';
 import { AddPostInputModel } from '../../posts/api/models/input/add-post.input.model';
 import { PostsQueryRepo } from '../../posts/infrastructure/posts.query-repo';
 import { PostsQueryParamsInputModel } from '../../posts/api/models/input/posts-query-params.input.model';
