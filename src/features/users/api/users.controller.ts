@@ -14,8 +14,8 @@ import { UsersService } from '../application/users.service';
 import { UsersQueryRepo } from '../infrastructure/users.query-repo';
 import { UsersInputBody } from './models/input/users.input.model';
 import { UsersQueryParamsInputModel } from './models/input/users-query-params.input.model';
-import { setPaginationForUsers } from '../../../utils/set-pagination';
 import { UsersRepo } from '../infrastructure/users.repo';
+import { setPagQueryParamsForUsers } from '../../../utils/set-pag-query-params-for-users';
 
 @Controller('users')
 export class UsersController {
@@ -30,7 +30,7 @@ export class UsersController {
     @Query()
     queryParams: UsersQueryParamsInputModel
   ) {
-    return this.usersQueryRepo.findAll(setPaginationForUsers(queryParams));
+    return this.usersQueryRepo.findAll(setPagQueryParamsForUsers(queryParams));
   }
   @Post()
   @HttpCode(HttpStatus.CREATED)

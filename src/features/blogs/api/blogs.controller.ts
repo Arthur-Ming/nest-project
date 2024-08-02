@@ -19,7 +19,7 @@ import { UpdateBlogInputModel } from './models/input/update-blog.input.model';
 import { AddPostInputModel } from '../../posts/api/models/input/add-post.input.model';
 import { PostsQueryRepo } from '../../posts/infrastructure/posts.query-repo';
 import { PostsQueryParamsInputModel } from '../../posts/api/models/input/posts-query-params.input.model';
-import { setPagination } from '../../../utils/set-pagination';
+import { setPagQueryParams } from '../../../utils/set-pag-query-params';
 import { BlogsRepo } from '../infrastructure/blogs.repo';
 
 @Controller('blogs')
@@ -35,7 +35,7 @@ export class BlogsController {
     @Query()
     queryParams: BlogsQueryParams
   ) {
-    return this.blogsQueryRepo.findAll(setPagination(queryParams));
+    return this.blogsQueryRepo.findAll(setPagQueryParams(queryParams));
   }
 
   @Get(':id')
@@ -60,7 +60,7 @@ export class BlogsController {
     if (!existsBlog) {
       throw new HttpException(`Blog with id ${id} not found`, HttpStatus.NOT_FOUND);
     }
-    return await this.postsQueryRepo.findAll(setPagination(queryParams), id);
+    return await this.postsQueryRepo.findAll(setPagQueryParams(queryParams), id);
   }
   @Post()
   @HttpCode(HttpStatus.CREATED)

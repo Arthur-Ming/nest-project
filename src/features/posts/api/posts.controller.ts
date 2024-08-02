@@ -17,7 +17,7 @@ import { AddPostInputModel, WithBlogId } from './models/input/add-post.input.mod
 import { PostsQueryParamsInputModel } from './models/input/posts-query-params.input.model';
 
 import { UpdatePostInputModel } from './models/input/update-post.input.model';
-import { setPagination } from '../../../utils/set-pagination';
+import { setPagQueryParams } from '../../../utils/set-pag-query-params';
 import { PostsRepo } from '../infrastructure/posts.repo';
 
 @Controller('posts')
@@ -32,7 +32,7 @@ export class PostsController {
     @Query()
     queryParams: PostsQueryParamsInputModel
   ) {
-    return await this.postsQueryRepo.findAll(setPagination(queryParams));
+    return await this.postsQueryRepo.findAll(setPagQueryParams(queryParams));
   }
 
   @Get(':id')

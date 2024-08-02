@@ -1,8 +1,9 @@
 import { config } from 'dotenv';
 config();
 
-export default {
-  port: process.env.PORT || 3003,
+export const appSettings = {
+  port: process.env.PORT || 3000,
+  dbBloggerPlatform: 'blogger_platform',
   mongoUrl: process.env.MONGO_URL,
   adminAuth: 'admin:qwerty',
   saltRounds: 4,

@@ -6,3 +6,9 @@ export enum resources {
   auth = 'auth',
   comments = 'comments',
 }
+
+export enum dbCollections {
+  blogs = 'blogs',
+  posts = 'posts',
+  users = 'users',
+}
