@@ -1,7 +1,10 @@
-import { AddPostInputModel } from '../../../../src/features/posts/api/models/input/add-post.input.model';
-import { BlogOutputData } from '../../../../src/features/blogs/api/models/output/blogs.output.model';
+import { CreatePostForSpecifiedBlogDto } from '../../../../src/features/posts/api/dto/input/create-post-for-specified-blog.dto';
+import { BlogOutputData } from '../../../../src/features/blogs/api/dto/output/blogs.output.model';
 
-export const postDtoCreator = (postInfo: AddPostInputModel, blogInfo: BlogOutputData) => ({
+export const postDtoCreator = (
+  postInfo: CreatePostForSpecifiedBlogDto,
+  blogInfo: BlogOutputData
+) => ({
   id: expect.any(String),
   title: postInfo.title,
   shortDescription: postInfo.shortDescription,

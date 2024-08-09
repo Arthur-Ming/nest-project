@@ -5,10 +5,11 @@ import { PostsController } from './api/posts.controller';
 import { PostsService } from './application/posts.service';
 import { PostsQueryRepo } from './infrastructure/posts.query-repo';
 import { PostsRepo } from './infrastructure/posts.repo';
+import { IsPostExistConstraint } from './decorators/validate/is-post-exist';
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }])],
   controllers: [PostsController],
-  providers: [PostsService, PostsRepo, PostsQueryRepo],
+  providers: [PostsService, PostsRepo, PostsQueryRepo, IsPostExistConstraint],
 })
 export class PostsModule {}

@@ -1,4 +1,4 @@
-import { SortDirections } from '../types/interfaces';
+import { SortDirections } from '../types/enum';
 
 export const DefaultQueryParams = {
   searchNameTerm: '',

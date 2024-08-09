@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { BlogsRepo } from '../infrastructure/blogs.repo';
-import { AddBlogInputModel } from '../api/models/input/add-blog.input.model';
-import { UpdateBlogInputModel } from '../api/models/input/update-blog.input.model';
-import { mapToUpdateBlogDto } from './utils/map-to-update-blog-dto';
-import { AddPostInputModel } from '../../posts/api/models/input/add-post.input.model';
+import { CreateBlogDto } from '../api/dto/input/create-blog.dto';
+import { CreatePostForSpecifiedBlogDto } from '../../posts/api/dto/input/create-post-for-specified-blog.dto';
 import { PostsService } from '../../posts/application/posts.service';
+import { UpdateBlogDto } from '../api/dto/input/update-blog.dto';
+import { InterlayerNotice } from '../../../base/result/result';
+import { ResultStatusEnum } from '../../../base/result/result-status.enum';
 
 @Injectable()
 export class BlogsService {
@@ -12,7 +13,7 @@ export class BlogsService {
     private blogsRepo: BlogsRepo,
     private postsService: PostsService
   ) {}
-  async addBlog(input: AddBlogInputModel) {
+  async addBlog(input: CreateBlogDto): Promise<InterlayerNotice<{ newBlogId: string }>> {
     const newBlogId = await this.blogsRepo.add({
       name: input.name,
       websiteUrl: input.websiteUrl,
@@ -20,19 +21,17 @@ export class BlogsService {
       createdAt: Number(new Date()),
       isMembership: false,
     });
-    return newBlogId;
+    return new InterlayerNotice(ResultStatusEnum.Success, { newBlogId });
   }
 
-  async addPostSpecificBlog(blogId: string, addPostInputModel: AddPostInputModel) {
+  async addPostSpecificBlog(blogId: string, dto: CreatePostForSpecifiedBlogDto) {
     const { id } = await this.postsService.addPost({
-      ...addPostInputModel,
+      ...dto,
       blogId,
     });
     return id;
   }
-  async updateBlog(blogId: string, updateBlogModel: UpdateBlogInputModel) {
-    const updateBlogDTO = mapToUpdateBlogDto(updateBlogModel);
-
+  async updateBlog(blogId: string, updateBlogDTO: UpdateBlogDto) {
     await this.blogsRepo.update(blogId, updateBlogDTO);
   }
 

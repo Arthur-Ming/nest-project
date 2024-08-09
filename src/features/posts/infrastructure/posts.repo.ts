@@ -2,15 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Post } from '../domain/posts.entity';
-import { CreatePostDto } from '../application/dto/create-post.dto';
 import { ObjectId } from 'mongodb';
-import { UpdatePostDto } from '../application/dto/update-post.dto';
+import { UpdatePostDto } from '../api/dto/input/update-post.dto';
 
 @Injectable()
 export class PostsRepo {
   constructor(@InjectModel(Post.name) private postModel: Model<Post>) {}
-  async add(createPostDto: CreatePostDto) {
-    const newPost = await this.postModel.create(createPostDto);
+  async add(post: Post) {
+    const newPost = await this.postModel.create(post);
     return newPost._id.toString();
   }
 
@@ -19,11 +18,16 @@ export class PostsRepo {
     return deleteResult.deletedCount === 1;
   }
 
-  async update(postId: string, input: UpdatePostDto): Promise<boolean> {
+  async update(postId: string, dto: UpdatePostDto): Promise<boolean> {
     const updateResult = await this.postModel.updateOne(
       { _id: new ObjectId(postId) },
       {
-        $set: input,
+        $set: {
+          title: dto.title,
+          shortDescription: dto.shortDescription,
+          content: dto.content,
+          blogId: new ObjectId(dto.blogId),
+        },
       }
     );
 

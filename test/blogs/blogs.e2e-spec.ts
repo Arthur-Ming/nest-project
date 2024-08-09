@@ -12,12 +12,14 @@ import { deleteCollections } from '../utils/delete-collections';
 import { createBlogMockDto } from './mockData/create-blog.mock.dto';
 import { updateBlogMockDto } from './mockData/update-blog.mock.dto';
 import { createdBlogModel } from './models/created-blog.model';
-import { setPagQueryParams } from '../../src/utils/set-pag-query-params';
 import { mapToPaginationParams } from '../utils/map-to-pagination-params';
 import { entitiesNum } from '../posts/constants/entities-num';
 import { wait } from '../utils/wait';
+import { QueryParamsDto } from '../../src/common/dto/query-params.dto';
+import { applyAppSettings } from '../../src/settings/apply-app-setting';
+import { AppModule } from '../../src/app.module';
 
-describe('Blogs', () => {
+describe('Blogs e2e', () => {
   let app: INestApplication;
   let req: TestAgent;
   let databaseConnection: Connection;
@@ -25,6 +27,7 @@ describe('Blogs', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [
+        AppModule,
         BlogsModule,
         TestingModule,
         MongooseModule.forRoot(appSettings.mongoUrl + '/' + appSettings.dbBloggerPlatform),
@@ -32,6 +35,7 @@ describe('Blogs', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
+    applyAppSettings(app);
     await app.init();
     req = agent(app.getHttpServer());
     databaseConnection = app.get<Connection>(getConnectionToken());
@@ -66,32 +70,35 @@ describe('Blogs', () => {
     expect(postRes.body).toMatchObject({ ...createdBlog, ...updateBlogMockDto });
   });
 
-  it('should delete entity by incorrect id', async function () {
+  it('should delete entity by correct id', async function () {
     const { createdBlog } = expect.getState();
 
     await req.delete('/blogs' + '/' + createdBlog.id).expect(HttpStatus.NO_CONTENT);
     await req.get('/blogs' + '/' + createdBlog.id).expect(HttpStatus.NOT_FOUND);
   });
 
-  it('should get entities with default pagination params', async function () {
-    await deleteCollections(databaseConnection);
+  describe('Blogs e2e get with pagination', () => {
+    beforeAll(async () => {
+      await deleteCollections(databaseConnection);
+    });
+    it('should get entities with default pagination params', async function () {
+      for (let i = 0; i < entitiesNum; i++) {
+        await req
+          .post('/blogs')
+          .send({ ...createBlogMockDto, name: `${createBlogMockDto.name}${i + 1}` });
+        await wait(1);
+      }
 
-    for (let i = 0; i < entitiesNum; i++) {
-      await req
-        .post('/blogs')
-        .send({ ...createBlogMockDto, name: `${createBlogMockDto.name}${i + 1}` });
-      await wait(1);
-    }
+      const { body: blogsWithPagination } = await req.get('/blogs').expect(HttpStatus.OK);
+      expect(blogsWithPagination.items.length).toBe(entitiesNum);
+      const defaultQueryParams = mapToPaginationParams(new QueryParamsDto(), entitiesNum);
 
-    const { body: blogsWithPagination } = await req.get('/blogs').expect(HttpStatus.OK);
-    expect(blogsWithPagination.items.length).toBe(entitiesNum);
-    const defaultQueryParams = mapToPaginationParams(setPagQueryParams({}), entitiesNum);
-
-    expect(blogsWithPagination.pagesCount).toBe(defaultQueryParams.pagesCount);
-    expect(blogsWithPagination.page).toBe(defaultQueryParams.page);
-    expect(blogsWithPagination.pageSize).toBe(defaultQueryParams.pageSize);
-    expect(blogsWithPagination.totalCount).toBe(defaultQueryParams.totalCount);
-  }, 20000);
+      expect(blogsWithPagination.pagesCount).toBe(defaultQueryParams.pagesCount);
+      expect(blogsWithPagination.page).toBe(defaultQueryParams.page);
+      expect(blogsWithPagination.pageSize).toBe(defaultQueryParams.pageSize);
+      expect(blogsWithPagination.totalCount).toBe(defaultQueryParams.totalCount);
+    }, 20000);
+  });
 
   afterAll(async () => {
     await app.close();

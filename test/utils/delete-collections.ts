@@ -8,5 +8,6 @@ export const deleteCollections = async (
   const cPs = collections.map((collection) =>
     databaseConnection.collection(collection).deleteMany({})
   );
-  await Promise.all(cPs);
+  const deleteResult = await Promise.all(cPs);
+  return deleteResult;
 };

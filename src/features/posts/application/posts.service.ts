@@ -1,28 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { PostsRepo } from '../infrastructure/posts.repo';
-import { AddPostInputModel, WithBlogId } from '../api/models/input/add-post.input.model';
 import { ObjectId } from 'mongodb';
-import { UpdatePostInputModel } from '../api/models/input/update-post.input.model';
-import { mapToUpdatePostDto } from './utils/map-to-update-post-dto';
+import { UpdatePostDto } from '../api/dto/input/update-post.dto';
+import { CreatePostDto } from '../api/dto/input/create-post.dto';
 
 @Injectable()
 export class PostsService {
   constructor(private postsRepo: PostsRepo) {}
 
-  async addPost(addPostInputModel: WithBlogId<AddPostInputModel>): Promise<{ id: string }> {
+  async addPost(dto: CreatePostDto): Promise<{ id: string }> {
     const addedPostId = await this.postsRepo.add({
-      title: addPostInputModel.title,
-      shortDescription: addPostInputModel.shortDescription,
-      content: addPostInputModel.content,
-      blogId: new ObjectId(addPostInputModel.blogId),
+      title: dto.title,
+      shortDescription: dto.shortDescription,
+      content: dto.content,
+      blogId: new ObjectId(dto.blogId),
       createdAt: Number(new Date()),
     });
 
     return { id: addedPostId };
   }
-  async updatePost(id: string, updatePostModel: UpdatePostInputModel) {
-    const updatePostDTO = mapToUpdatePostDto(updatePostModel);
-
+  async updatePost(id: string, updatePostDTO: UpdatePostDto) {
     await this.postsRepo.update(id, updatePostDTO);
   }
   async deletePost(postId: string) {

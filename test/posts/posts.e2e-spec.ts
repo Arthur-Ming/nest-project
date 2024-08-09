@@ -14,13 +14,14 @@ import { addPostDtoCreator } from './dtoCreators/input/add-post.dto-creator';
 import { postDtoCreator } from './dtoCreators/output/post.dto-creator';
 import { BlogsModule } from '../../src/features/blogs/blogs.module';
 import { updatePostDtoCreator } from './dtoCreators/input/update-post.dto-creator';
-
 import { wait } from '../utils/wait';
 import { entitiesNum } from './constants/entities-num';
-import { setPagQueryParams } from '../../src/utils/set-pag-query-params';
+import { AppModule } from '../../src/app.module';
+import { applyAppSettings } from '../../src/settings/apply-app-setting';
+import { QueryParamsDto } from '../../src/common/dto/query-params.dto';
 import { mapToPaginationParams } from '../utils/map-to-pagination-params';
 
-describe('Posts', () => {
+describe('Posts e2e', () => {
   let app: INestApplication;
   let req: TestAgent;
   let databaseConnection: Connection;
@@ -28,6 +29,7 @@ describe('Posts', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [
+        AppModule,
         BlogsModule,
         PostsModule,
         TestingModule,
@@ -36,6 +38,7 @@ describe('Posts', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
+    applyAppSettings(app);
     await app.init();
     req = agent(app.getHttpServer());
     databaseConnection = app.get<Connection>(getConnectionToken());
@@ -79,7 +82,7 @@ describe('Posts', () => {
 
   it('should update entity with correct input data', async function () {
     const { createdPost, createdBlog } = expect.getState();
-    const updatePostDto = updatePostDtoCreator(createdBlog);
+    const updatePostDto = updatePostDtoCreator(createdBlog.id);
     await req
       .put('/posts' + '/' + createdPost.id)
       .send(updatePostDto)
@@ -94,27 +97,30 @@ describe('Posts', () => {
     await req.get('/posts' + '/' + createdPost.id).expect(HttpStatus.NOT_FOUND);
   });
 
-  it.skip('should get entities with default pagination params', async function () {
-    await deleteCollections(databaseConnection, ['posts']);
-    const { createdBlog } = expect.getState();
+  describe('Posts e2e get with pagination', () => {
+    beforeAll(async () => {
+      await deleteCollections(databaseConnection);
+    });
+    it('should get entities with default pagination params', async function () {
+      const { createdBlog } = expect.getState();
 
-    for (let i = 0; i < entitiesNum; i++) {
-      const addPostDto = addPostDtoCreator(createdBlog.id);
-      addPostDto.title = `${addPostDto.title}${i + 1}`;
-      await req.post('/posts').send(addPostDto);
-      await wait(1);
-    }
-    const { body: postsWithPagination } = await req.get('/posts').expect(HttpStatus.OK);
+      for (let i = 0; i < entitiesNum; i++) {
+        const addPostDto = addPostDtoCreator(createdBlog.id);
+        addPostDto.title = `${addPostDto.title}${i + 1}`;
+        await req.post('/posts').send(addPostDto);
+        await wait(1);
+      }
+      const { body: postsWithPagination } = await req.get('/posts').expect(HttpStatus.OK);
 
-    expect(postsWithPagination.items.length).toBe(entitiesNum);
-    const defaultQueryParams = mapToPaginationParams(setPagQueryParams({}), entitiesNum);
+      expect(postsWithPagination.items.length).toBe(entitiesNum);
+      const defaultQueryParams = mapToPaginationParams(new QueryParamsDto(), entitiesNum);
 
-    expect(postsWithPagination.pagesCount).toBe(defaultQueryParams.pagesCount);
-    expect(postsWithPagination.page).toBe(defaultQueryParams.page);
-    expect(postsWithPagination.pageSize).toBe(defaultQueryParams.pageSize);
-    expect(postsWithPagination.totalCount).toBe(defaultQueryParams.totalCount);
-  }, 20000);
-
+      expect(postsWithPagination.pagesCount).toBe(defaultQueryParams.pagesCount);
+      expect(postsWithPagination.page).toBe(defaultQueryParams.page);
+      expect(postsWithPagination.pageSize).toBe(defaultQueryParams.pageSize);
+      expect(postsWithPagination.totalCount).toBe(defaultQueryParams.totalCount);
+    }, 20000);
+  });
   afterAll(async () => {
     await app.close();
   });

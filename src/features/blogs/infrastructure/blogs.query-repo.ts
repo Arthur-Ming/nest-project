@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog } from '../domain/blogs.entity';
 import { Model } from 'mongoose';
-import { BlogOutputData, blogsMapToOutput } from '../api/models/output/blogs.output.model';
+import { BlogOutputData, blogsMapToOutput } from '../api/dto/output/blogs.output.model';
 import { Pagination } from '../../../common/types';
-import { QueryParamsDTO } from '../../../common/types/interfaces';
-const filter = ({ searchNameTerm }: QueryParamsDTO) => {
+import { BlogsQueryParamsDto } from '../api/dto/input/blogs-query-params.dto';
+
+const filter = ({ searchNameTerm }: BlogsQueryParamsDto) => {
   return searchNameTerm
     ? {
         name: {
@@ -19,10 +20,10 @@ const filter = ({ searchNameTerm }: QueryParamsDTO) => {
 export class BlogsQueryRepo {
   constructor(@InjectModel(Blog.name) private blogModel: Model<Blog>) {}
 
-  getTotalCount = async (queryParams: QueryParamsDTO) => {
+  getTotalCount = async (queryParams: BlogsQueryParamsDto) => {
     return this.blogModel.countDocuments(filter(queryParams));
   };
-  async findAll(queryParams: QueryParamsDTO): Promise<Pagination<BlogOutputData[]>> {
+  async findByQueryParams(queryParams: BlogsQueryParamsDto): Promise<Pagination<BlogOutputData[]>> {
     const blogs = await this.blogModel.find(
       filter(queryParams),
       {},

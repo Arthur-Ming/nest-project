@@ -12,3 +12,8 @@ export enum dbCollections {
   posts = 'posts',
   users = 'users',
 }
+
+export enum SortDirections {
+  asc = 'asc',
+  desc = 'desc',
+}
