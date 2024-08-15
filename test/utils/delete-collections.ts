@@ -1,13 +1,20 @@
 import { Connection } from 'mongoose';
 import { dbCollections } from '../../src/common/types/enum';
 
-export const deleteCollections = async (
+export async function deleteCollections(
   databaseConnection: Connection,
-  collections: string[] = Object.values(dbCollections)
-) => {
+  collections: string[] = ['blogs', 'posts', 'users']
+) {
   const cPs = collections.map((collection) =>
     databaseConnection.collection(collection).deleteMany({})
   );
-  const deleteResult = await Promise.all(cPs);
-  return deleteResult;
-};
+  await Promise.all(cPs);
+  // console.log(r);
+
+  // await databaseConnection.dropCollection('blogs');
+  // await databaseConnection.dropCollection('posts');
+  // await databaseConnection.collection('blogs').deleteMany({});
+  // await databaseConnection.collection('posts').deleteMany({});
+
+  console.log('delete db');
+}
