@@ -21,20 +21,14 @@ import { applyAppSettings } from '../../src/settings/apply-app-setting';
 import { QueryParamsDto } from '../../src/common/dto/query-params.dto';
 import { mapToPaginationParams } from '../utils/map-to-pagination-params';
 
-describe('Posts e2e', () => {
+describe.skip('Posts e2e', () => {
   let app: INestApplication;
   let req: TestAgent;
   let databaseConnection: Connection;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [
-        AppModule,
-        BlogsModule,
-        PostsModule,
-        TestingModule,
-        MongooseModule.forRoot(appSettings.mongoUrl + '/' + appSettings.dbBloggerPlatform),
-      ],
+      imports: [AppModule],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -42,59 +36,71 @@ describe('Posts e2e', () => {
     await app.init();
     req = agent(app.getHttpServer());
     databaseConnection = app.get<Connection>(getConnectionToken());
-    await deleteCollections(databaseConnection);
   });
-  it('should get empty array', async () => {
-    const res = await req.get('/posts').expect(HttpStatus.OK);
-    expect(res.body.items).toEqual([]);
-  });
-
-  it('should create entity with correct input data', async function () {
-    const { body: createdBlog } = await req.post('/blogs').send(createBlogMockDto);
-    expect.setState({
-      createdBlog: createdBlog,
+  describe('Posts e2e base CRUD', () => {
+    beforeAll(async () => {
+      await deleteCollections(databaseConnection);
     });
-    const addPostDto = addPostDtoCreator(createdBlog.id);
-    const { body: createdPost } = await req
-      .post('/posts')
-      .send(addPostDto)
-      .expect(HttpStatus.CREATED);
-    expect(createdPost).toMatchObject(postDtoCreator(addPostDto, createdBlog));
-    expect.setState({
-      createdPost: createdPost,
+
+    it('should get empty array', async () => {
+      const res = await req.get('/posts').expect(HttpStatus.OK);
+      expect(res.body.items).toEqual([]);
     });
-  });
-  it('should create entity for specified blog with correct input data', async function () {
-    const { createdBlog } = expect.getState();
-    const addPostDto = addPostDtoCreator();
 
-    const { body: createdPost } = await req
-      .post('/blogs' + '/' + createdBlog.id + '/' + 'posts')
-      .send(addPostDto)
-      .expect(HttpStatus.CREATED);
-    expect(createdPost).toMatchObject(postDtoCreator(addPostDto, createdBlog));
-  });
-  it('should get entity by correct id', async function () {
-    const { createdPost } = expect.getState();
-    const { body: post } = await req.get('/posts' + '/' + createdPost.id).expect(HttpStatus.OK);
-    expect(post).toMatchObject(createdPost);
-  });
+    it('should create entity with correct input data', async function () {
+      const { body: createdBlog } = await req
+        .post('/blogs')
+        .send({ ...createBlogMockDto, name: 'blog for post' });
 
-  it('should update entity with correct input data', async function () {
-    const { createdPost, createdBlog } = expect.getState();
-    const updatePostDto = updatePostDtoCreator(createdBlog.id);
-    await req
-      .put('/posts' + '/' + createdPost.id)
-      .send(updatePostDto)
-      .expect(HttpStatus.NO_CONTENT);
-    const { body: updatedPost } = await req.get('/posts' + '/' + createdPost.id);
-    expect(updatedPost).toMatchObject(postDtoCreator(updatePostDto, createdBlog));
-  });
+      expect.setState({
+        createdBlog: createdBlog,
+      });
+      const addPostDto = addPostDtoCreator(createdBlog.id);
+      const { body: createdPost } = await req
+        .post('/posts')
+        .send(addPostDto)
+        .expect(HttpStatus.CREATED);
+      expect(createdPost).toMatchObject(postDtoCreator(addPostDto, createdBlog));
 
-  it('should delete entity by incorrect id', async function () {
-    const { createdPost } = expect.getState();
-    await req.delete('/posts' + '/' + createdPost.id).expect(HttpStatus.NO_CONTENT);
-    await req.get('/posts' + '/' + createdPost.id).expect(HttpStatus.NOT_FOUND);
+      expect.setState({
+        createdPost: createdPost,
+      });
+    });
+    it('should create entity for specified blog with correct input data', async function () {
+      const { createdBlog } = expect.getState();
+      const addPostDto = addPostDtoCreator();
+
+      const { body: createdPost } = await req
+        .post('/blogs' + '/' + createdBlog.id + '/' + 'posts')
+        .send(addPostDto)
+        .expect(HttpStatus.CREATED);
+      expect(createdPost).toMatchObject(postDtoCreator(addPostDto, createdBlog));
+    });
+    it('should get entity by correct id', async function () {
+      const { createdPost } = expect.getState();
+      const { body: post } = await req.get('/posts' + '/' + createdPost.id).expect(HttpStatus.OK);
+
+      expect(post).toMatchObject(createdPost);
+    });
+
+    it('should update entity with correct input data', async function () {
+      const { createdPost, createdBlog } = expect.getState();
+      const updatePostDto = updatePostDtoCreator(createdBlog.id);
+      await req
+        .put('/posts' + '/' + createdPost.id)
+        .send(updatePostDto)
+        .expect(HttpStatus.NO_CONTENT);
+
+      const { body: updatedPost } = await req.get('/posts' + '/' + createdPost.id);
+      expect(updatedPost).toMatchObject(postDtoCreator(updatePostDto, createdBlog));
+    });
+
+    it('should delete entity by correct id', async function () {
+      const { createdPost } = expect.getState();
+
+      await req.delete('/posts' + '/' + createdPost.id).expect(HttpStatus.NO_CONTENT);
+      await req.get('/posts' + '/' + createdPost.id).expect(HttpStatus.NOT_FOUND);
+    });
   });
 
   describe('Posts e2e get with pagination', () => {

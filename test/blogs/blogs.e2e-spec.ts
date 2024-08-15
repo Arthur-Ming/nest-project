@@ -1,82 +1,92 @@
-import { Test } from '@nestjs/testing';
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { agent } from 'supertest';
 import { Connection } from 'mongoose';
-import { BlogsModule } from '../../src/features/blogs/blogs.module';
-import { MongooseModule } from '@nestjs/mongoose';
-import { appSettings } from '../../src/settings/app-settings';
 import TestAgent from 'supertest/lib/agent';
-import { TestingModule } from '../../src/features/testing/testing.module';
-import { getConnectionToken } from '@nestjs/mongoose';
 import { deleteCollections } from '../utils/delete-collections';
 import { createBlogMockDto } from './mockData/create-blog.mock.dto';
 import { updateBlogMockDto } from './mockData/update-blog.mock.dto';
 import { createdBlogModel } from './models/created-blog.model';
-import { mapToPaginationParams } from '../utils/map-to-pagination-params';
 import { entitiesNum } from '../posts/constants/entities-num';
 import { wait } from '../utils/wait';
+import { genDbId } from '../utils/gen-db-id';
 import { QueryParamsDto } from '../../src/common/dto/query-params.dto';
-import { applyAppSettings } from '../../src/settings/apply-app-setting';
-import { AppModule } from '../../src/app.module';
+import { mapToPaginationParams } from '../utils/map-to-pagination-params';
+import { initSettings } from '../utils/init-settings';
+import { BlogsTestManager } from './utils/blogs-test-manager';
 
 describe('Blogs e2e', () => {
   let app: INestApplication;
   let req: TestAgent;
   let databaseConnection: Connection;
+  let blogsTestManager: BlogsTestManager;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        AppModule,
-        BlogsModule,
-        TestingModule,
-        MongooseModule.forRoot(appSettings.mongoUrl + '/' + appSettings.dbBloggerPlatform),
-      ],
-    }).compile();
-
-    app = moduleRef.createNestApplication();
-    applyAppSettings(app);
-    await app.init();
-    req = agent(app.getHttpServer());
-    databaseConnection = app.get<Connection>(getConnectionToken());
-    await deleteCollections(databaseConnection);
+    const result = await initSettings();
+    app = result.app;
+    databaseConnection = result.databaseConnection;
+    req = result.req;
+    blogsTestManager = new BlogsTestManager(app);
   });
+  describe('Blogs e2e base CRUD', () => {
+    beforeAll(async () => {
+      await deleteCollections(databaseConnection);
+    });
 
-  it('should get empty array', async () => {
-    const res = await req.get('/blogs').expect(HttpStatus.OK);
-    expect(res.body.items).toEqual([]);
-  });
+    it('should get empty array', async () => {
+      const res = await req.get('/blogs').expect(HttpStatus.OK);
+      expect(res.body.items).toEqual([]);
+    });
 
-  it('should create entity with correct input data', async function () {
-    const res = await req.post('/blogs').send(createBlogMockDto).expect(HttpStatus.CREATED);
-    expect(res.body).toMatchObject(createdBlogModel);
-    expect.setState({
-      createdBlog: res.body,
+    it('should create entity with correct input data', async function () {
+      const { body: createdBlog } = await blogsTestManager.createBlog(createBlogMockDto);
+      expect(createdBlog).toMatchObject(createdBlogModel);
+      expect.setState({
+        createdBlog,
+      });
+    });
+    it('shouldn`t create entity by incorrect input data', async function () {
+      await blogsTestManager.createBlog(
+        {
+          name: 'bl',
+          description: 'string',
+          websiteUrl: 'https://www.youtube.com/',
+        },
+        HttpStatus.BAD_REQUEST
+      );
+
+      // await blogsTestManager.createBlog(
+      //   {
+      //     name: 'bl',
+      //     description: 'string',
+      //     websiteUrl: 'https://www.youtube.com/',
+      //   },
+      //   HttpStatus.BAD_REQUEST
+      // );
+    });
+    it('should get entity by correct id', async function () {
+      const { createdBlog } = expect.getState();
+      const postRes = await req.get('/blogs' + '/' + createdBlog.id).expect(HttpStatus.OK);
+      expect(postRes.body).toMatchObject(createdBlog);
+    });
+    it('shouldn`t get entity by incorrect id', async function () {
+      const someId = genDbId();
+      await req.get('/blogs' + '/' + someId).expect(HttpStatus.NOT_FOUND);
+    });
+    it('should update entity with correct input data', async function () {
+      const { createdBlog } = expect.getState();
+      await req
+        .put('/blogs' + '/' + createdBlog.id)
+        .send(updateBlogMockDto)
+        .expect(HttpStatus.NO_CONTENT);
+      const postRes = await req.get('/blogs' + '/' + createdBlog.id);
+      expect(postRes.body).toMatchObject({ ...createdBlog, ...updateBlogMockDto });
+    });
+
+    it('should delete entity by correct id', async function () {
+      const { createdBlog } = expect.getState();
+      await req.delete('/blogs' + '/' + createdBlog.id).expect(HttpStatus.NO_CONTENT);
+      await req.get('/blogs' + '/' + createdBlog.id).expect(HttpStatus.NOT_FOUND);
     });
   });
-  it('should get entity by correct id', async function () {
-    const { createdBlog } = expect.getState();
-    const postRes = await req.get('/blogs' + '/' + createdBlog.id).expect(HttpStatus.OK);
-
-    expect(postRes.body).toMatchObject(createdBlog);
-  });
-  it('should update entity with correct input data', async function () {
-    const { createdBlog } = expect.getState();
-    await req
-      .put('/blogs' + '/' + createdBlog.id)
-      .send(updateBlogMockDto)
-      .expect(HttpStatus.NO_CONTENT);
-    const postRes = await req.get('/blogs' + '/' + createdBlog.id);
-    expect(postRes.body).toMatchObject({ ...createdBlog, ...updateBlogMockDto });
-  });
-
-  it('should delete entity by correct id', async function () {
-    const { createdBlog } = expect.getState();
-
-    await req.delete('/blogs' + '/' + createdBlog.id).expect(HttpStatus.NO_CONTENT);
-    await req.get('/blogs' + '/' + createdBlog.id).expect(HttpStatus.NOT_FOUND);
-  });
-
   describe('Blogs e2e get with pagination', () => {
     beforeAll(async () => {
       await deleteCollections(databaseConnection);
