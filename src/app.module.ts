@@ -8,7 +8,11 @@ import { appSettings } from './settings/app-settings';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(appSettings.mongoUrl + '/' + appSettings.dbBloggerPlatform),
+    MongooseModule.forRoot(
+      appSettings.env.isTesting()
+        ? appSettings.api.MONGO_CONNECTION_URI_FOR_TESTS
+        : appSettings.api.MONGO_CONNECTION_URI
+    ),
     TestingModule,
     BlogsModule,
     UsersModule,
