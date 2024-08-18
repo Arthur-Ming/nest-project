@@ -1,8 +1,8 @@
-import { IsMongoId } from 'class-validator';
 import { IsBlogExist } from '../../../decorators/validate/is-blog-exist';
+import { IsValidDbId } from '../../../../../common/decorators/validate/is-valid-db-id';
 
 export class BlogByIdDto {
   @IsBlogExist()
-  @IsMongoId()
+  @IsValidDbId()
   id: string;
 }

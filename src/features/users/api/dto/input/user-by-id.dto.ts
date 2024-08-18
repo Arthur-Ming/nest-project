@@ -1,8 +1,8 @@
-import { IsMongoId } from 'class-validator';
 import { IsUserExist } from '../../../decorators/validate/is-user-exist';
+import { IsValidDbId } from '../../../../../common/decorators/validate/is-valid-db-id';
 
 export class UserByIdDto {
   @IsUserExist()
-  @IsMongoId()
+  @IsValidDbId()
   id: string;
 }
