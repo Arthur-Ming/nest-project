@@ -1,1 +1,1 @@
-export const entitiesNum = 8;
+export const entitiesNum = 15;

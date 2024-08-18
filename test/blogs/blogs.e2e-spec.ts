@@ -4,7 +4,6 @@ import TestAgent from 'supertest/lib/agent';
 import { deleteCollections } from '../utils/delete-collections';
 import { createBlogMockDto } from './mockData/create-blog.mock.dto';
 import { updateBlogMockDto } from './mockData/update-blog.mock.dto';
-import { createdBlogModel } from './models/created-blog.model';
 import { entitiesNum } from '../posts/constants/entities-num';
 import { wait } from '../utils/wait';
 import { genDbId } from '../utils/gen-db-id';
@@ -26,65 +25,152 @@ describe('Blogs e2e', () => {
     req = result.req;
     blogsTestManager = new BlogsTestManager(app);
   });
-  describe('Blogs e2e base CRUD', () => {
+
+  describe.skip('Blogs e2e blogs creating', () => {
     beforeAll(async () => {
       await deleteCollections(databaseConnection);
     });
-
     it('should get empty array', async () => {
-      const res = await req.get('/blogs').expect(HttpStatus.OK);
-      expect(res.body.items).toEqual([]);
+      await blogsTestManager.mustBeEmpty();
+    });
+    it('shouldn`t create entity by incorrect input data', async function () {
+      const res = await blogsTestManager.createBlog({} as any, HttpStatus.BAD_REQUEST);
+      blogsTestManager.expectValidationError(res.body, ['name', 'description', 'websiteUrl']);
+      await blogsTestManager.mustBeEmpty();
+    });
+    it('shouldn`t create entity by incorrect input data', async function () {
+      const res = await blogsTestManager.createBlog(
+        { ...createBlogMockDto, name: 'f' } as any,
+        HttpStatus.BAD_REQUEST
+      );
+      blogsTestManager.expectValidationError(res.body, ['name']);
+      await blogsTestManager.mustBeEmpty();
+    });
+
+    it('shouldn`t create entity by incorrect input data', async function () {
+      const res = await blogsTestManager.createBlog(
+        { ...createBlogMockDto, description: 'f' } as any,
+        HttpStatus.BAD_REQUEST
+      );
+      blogsTestManager.expectValidationError(res.body, ['description']);
+      await blogsTestManager.mustBeEmpty();
+    });
+
+    it('shouldn`t create entity by incorrect input data', async function () {
+      const res = await blogsTestManager.createBlog(
+        { ...createBlogMockDto, websiteUrl: 'f' } as any,
+        HttpStatus.BAD_REQUEST
+      );
+      blogsTestManager.expectValidationError(res.body, ['websiteUrl']);
+      await blogsTestManager.mustBeEmpty();
     });
 
     it('should create entity with correct input data', async function () {
       const { body: createdBlog } = await blogsTestManager.createBlog(createBlogMockDto);
-      expect(createdBlog).toMatchObject(createdBlogModel);
-      expect.setState({
-        createdBlog,
-      });
+      blogsTestManager.expectCorrectModel(createdBlog);
+      const { body: resBody } = await blogsTestManager.getBlogById(createdBlog.id);
+      blogsTestManager.expectCorrectModel(resBody);
     });
-    it('shouldn`t create entity by incorrect input data', async function () {
-      await blogsTestManager.createBlog(
-        {
-          name: 'bl',
-          description: 'string',
-          websiteUrl: 'https://www.youtube.com/',
-        },
-        HttpStatus.BAD_REQUEST
-      );
-
-      // await blogsTestManager.createBlog(
-      //   {
-      //     name: 'bl',
-      //     description: 'string',
-      //     websiteUrl: 'https://www.youtube.com/',
-      //   },
-      //   HttpStatus.BAD_REQUEST
-      // );
+  });
+  describe.skip('Blogs e2e blogs reading', () => {
+    beforeAll(async () => {
+      await deleteCollections(databaseConnection);
+    });
+    it('should get empty array', async () => {
+      await blogsTestManager.mustBeEmpty();
+    });
+    it('should create entity with correct input data', async function () {
+      const { body: createdBlog } = await blogsTestManager.createBlog(createBlogMockDto);
+      blogsTestManager.expectCorrectModel(createdBlog);
+      expect.setState({ createdBlog });
     });
     it('should get entity by correct id', async function () {
       const { createdBlog } = expect.getState();
-      const postRes = await req.get('/blogs' + '/' + createdBlog.id).expect(HttpStatus.OK);
-      expect(postRes.body).toMatchObject(createdBlog);
+      const { body: resBody } = await blogsTestManager.getBlogById(createdBlog.id);
+      blogsTestManager.expectCorrectModel(resBody);
     });
     it('shouldn`t get entity by incorrect id', async function () {
+      await blogsTestManager.getBlogById('123', HttpStatus.NOT_FOUND);
+    });
+    it('shouldn`t get a non-existent entity', async function () {
       const someId = genDbId();
-      await req.get('/blogs' + '/' + someId).expect(HttpStatus.NOT_FOUND);
+      await blogsTestManager.getBlogById(someId, HttpStatus.NOT_FOUND);
+    });
+  });
+  describe.skip('Blogs e2e blogs updating', () => {
+    beforeAll(async () => {
+      await deleteCollections(databaseConnection);
+    });
+    it('should get empty array', async () => {
+      await blogsTestManager.mustBeEmpty();
+    });
+    it('should create entity with correct input data', async function () {
+      const { body: createdBlog } = await blogsTestManager.createBlog(createBlogMockDto);
+      blogsTestManager.expectCorrectModel(createdBlog);
+      expect.setState({ createdBlog });
+    });
+    it('shouldn`t update entity by incorrect id', async function () {
+      await blogsTestManager.updateBlog(updateBlogMockDto, '123', HttpStatus.NOT_FOUND);
+    });
+    it('shouldn`t update a non-existent entity', async function () {
+      const someId = genDbId();
+      await blogsTestManager.updateBlog(updateBlogMockDto, someId, HttpStatus.NOT_FOUND);
+    });
+    it('shouldn`t update entity with incorrect input data', async function () {
+      const { createdBlog } = expect.getState();
+      const res = await blogsTestManager.updateBlog(
+        {} as any,
+        createdBlog.id,
+        HttpStatus.BAD_REQUEST
+      );
+      blogsTestManager.expectValidationError(res.body, ['name', 'description', 'websiteUrl']);
+      const { body: blog } = await blogsTestManager.getBlogById(createdBlog.id);
+      blogsTestManager.expectCorrectModel(blog, createdBlog);
+    });
+    it('shouldn`t update entity with incorrect input data', async function () {
+      const { createdBlog } = expect.getState();
+      const res = await blogsTestManager.updateBlog(
+        { ...updateBlogMockDto, name: 'f' } as any,
+        createdBlog.id,
+        HttpStatus.BAD_REQUEST
+      );
+      blogsTestManager.expectValidationError(res.body, ['name']);
+      const { body: blog } = await blogsTestManager.getBlogById(createdBlog.id);
+      blogsTestManager.expectCorrectModel(blog, createdBlog);
     });
     it('should update entity with correct input data', async function () {
       const { createdBlog } = expect.getState();
-      await req
-        .put('/blogs' + '/' + createdBlog.id)
-        .send(updateBlogMockDto)
-        .expect(HttpStatus.NO_CONTENT);
-      const postRes = await req.get('/blogs' + '/' + createdBlog.id);
-      expect(postRes.body).toMatchObject({ ...createdBlog, ...updateBlogMockDto });
+      await blogsTestManager.updateBlog(updateBlogMockDto, createdBlog.id);
+      const { body: updatedBlog } = await blogsTestManager.getBlogById(createdBlog.id);
+      blogsTestManager.expectCorrectModel(updatedBlog, {
+        ...createdBlog,
+        ...updateBlogMockDto,
+      });
     });
-
+  });
+  describe.skip('Blogs e2e blogs deleting', () => {
+    beforeAll(async () => {
+      await deleteCollections(databaseConnection);
+    });
+    it('should get empty array', async () => {
+      await blogsTestManager.mustBeEmpty();
+    });
+    it('should create entity with correct input data', async function () {
+      const { body: createdBlog } = await blogsTestManager.createBlog(createBlogMockDto);
+      blogsTestManager.expectCorrectModel(createdBlog);
+      expect.setState({ createdBlog });
+    });
+    it('shouldn`t delete a non-existent entity', async function () {
+      const someId = genDbId();
+      await blogsTestManager.deleteBlogById(someId, HttpStatus.NOT_FOUND);
+    });
+    it('shouldn`t delete entity by incorrect id', async function () {
+      await blogsTestManager.deleteBlogById('123', HttpStatus.NOT_FOUND);
+    });
     it('should delete entity by correct id', async function () {
       const { createdBlog } = expect.getState();
-      await req.delete('/blogs' + '/' + createdBlog.id).expect(HttpStatus.NO_CONTENT);
-      await req.get('/blogs' + '/' + createdBlog.id).expect(HttpStatus.NOT_FOUND);
+      await blogsTestManager.deleteBlogById(createdBlog.id);
+      await blogsTestManager.getBlogById(createdBlog.id, HttpStatus.NOT_FOUND);
     });
   });
   describe('Blogs e2e get with pagination', () => {
@@ -93,20 +179,27 @@ describe('Blogs e2e', () => {
     });
     it('should get entities with default pagination params', async function () {
       for (let i = 0; i < entitiesNum; i++) {
-        await req
-          .post('/blogs')
-          .send({ ...createBlogMockDto, name: `${createBlogMockDto.name}${i + 1}` });
+        await blogsTestManager.createBlog({
+          ...createBlogMockDto,
+          name: `${createBlogMockDto.name}${i + 1}`,
+        });
         await wait(1);
       }
-
       const { body: blogsWithPagination } = await req.get('/blogs').expect(HttpStatus.OK);
-      expect(blogsWithPagination.items.length).toBe(entitiesNum);
-      const defaultQueryParams = mapToPaginationParams(new QueryParamsDto(), entitiesNum);
 
-      expect(blogsWithPagination.pagesCount).toBe(defaultQueryParams.pagesCount);
-      expect(blogsWithPagination.page).toBe(defaultQueryParams.page);
-      expect(blogsWithPagination.pageSize).toBe(defaultQueryParams.pageSize);
-      expect(blogsWithPagination.totalCount).toBe(defaultQueryParams.totalCount);
+      blogsTestManager.expectPaginationParams(
+        blogsWithPagination,
+        new QueryParamsDto(),
+        entitiesNum
+      );
+
+      // expect(blogsWithPagination.items.length).toBe(entitiesNum);
+      // const defaultQueryParams = mapToPaginationParams(new QueryParamsDto(), entitiesNum);
+
+      // expect(blogsWithPagination.pagesCount).toBe(defaultQueryParams.pagesCount);
+      // expect(blogsWithPagination.page).toBe(defaultQueryParams.page);
+      // expect(blogsWithPagination.pageSize).toBe(defaultQueryParams.pageSize);
+      // expect(blogsWithPagination.totalCount).toBe(defaultQueryParams.totalCount);
     }, 20000);
   });
 

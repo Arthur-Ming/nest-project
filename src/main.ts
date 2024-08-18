@@ -7,8 +7,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   applyAppSettings(app);
 
-  await app.listen(appSettings.port, () => {
-    console.log('App starting listen port: ', appSettings.port);
+  await app.listen(appSettings.api.APP_PORT, () => {
+    console.log('App starting listen port: ', appSettings.api.APP_PORT);
   });
 }
 bootstrap();
