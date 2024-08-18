@@ -9,6 +9,7 @@ import { PostsService } from '../posts/application/posts.service';
 import { PostsRepo } from '../posts/infrastructure/posts.repo';
 import { Post, PostSchema } from '../posts/domain/posts.entity';
 import { PostsQueryRepo } from '../posts/infrastructure/posts.query-repo';
+import { IsBlogExistConstraint } from './decorators/validate/is-blog-exist';
 
 @Module({
   imports: [
@@ -16,6 +17,14 @@ import { PostsQueryRepo } from '../posts/infrastructure/posts.query-repo';
     MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
   ],
   controllers: [BlogsController],
-  providers: [BlogsService, BlogsQueryRepo, BlogsRepo, PostsService, PostsRepo, PostsQueryRepo],
+  providers: [
+    BlogsService,
+    BlogsQueryRepo,
+    BlogsRepo,
+    PostsService,
+    PostsRepo,
+    PostsQueryRepo,
+    IsBlogExistConstraint,
+  ],
 })
 export class BlogsModule {}

@@ -9,68 +9,49 @@ import {
   Query,
   Put,
   Delete,
-  HttpException,
 } from '@nestjs/common';
 import { PostsService } from '../application/posts.service';
 import { PostsQueryRepo } from '../infrastructure/posts.query-repo';
-import { AddPostInputModel, WithBlogId } from './models/input/add-post.input.model';
-import { PostsQueryParamsInputModel } from './models/input/posts-query-params.input.model';
-
-import { UpdatePostInputModel } from './models/input/update-post.input.model';
-import { setPagination } from '../../../utils/set-pagination';
-import { PostsRepo } from '../infrastructure/posts.repo';
+import { UpdatePostDto } from './dto/input/update-post.dto';
+import { CreatePostDto } from './dto/input/create-post.dto';
+import { PostByIdDto } from './dto/input/post-by-id.dto';
+import { PostsQueryParamsDto } from './dto/input/posts-query-params.dto';
 
 @Controller('posts')
 export class PostsController {
   constructor(
     private postsService: PostsService,
-    private postsQueryRepo: PostsQueryRepo,
-    private postsRepo: PostsRepo
+    private postsQueryRepo: PostsQueryRepo
   ) {}
   @Get()
   async getAll(
     @Query()
-    queryParams: PostsQueryParamsInputModel
+    queryParams: PostsQueryParamsDto
   ) {
-    return await this.postsQueryRepo.findAll(setPagination(queryParams));
+    return await this.postsQueryRepo.findAll(queryParams);
   }
 
   @Get(':id')
-  async getBlogById(@Param('id') id: string) {
-    const existsBlog = await this.postsRepo.existsById(id);
-
-    if (!existsBlog) {
-      throw new HttpException(`Post with id ${id} not found`, HttpStatus.NOT_FOUND);
-    }
-    return await this.postsQueryRepo.findById(id);
+  async getBlogById(@Param() params: PostByIdDto) {
+    return await this.postsQueryRepo.findById(params.id);
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async addBlog(@Body() addPostInputModel: WithBlogId<AddPostInputModel>) {
-    const { id } = await this.postsService.addPost(addPostInputModel);
+  async createPost(@Body() createPostDto: CreatePostDto) {
+    const { id } = await this.postsService.addPost(createPostDto);
     return await this.postsQueryRepo.findById(id);
   }
 
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async updatePost(@Param('id') id: string, @Body() updatePostModel: UpdatePostInputModel) {
-    const existsBlog = await this.postsRepo.existsById(id);
-
-    if (!existsBlog) {
-      throw new HttpException(`Post with id ${id} not found`, HttpStatus.NOT_FOUND);
-    }
-    await this.postsService.updatePost(id, updatePostModel);
+  async updatePost(@Param() params: PostByIdDto, @Body() updatePostDto: UpdatePostDto) {
+    await this.postsService.updatePost(params.id, updatePostDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePost(@Param('id') id: string) {
-    const existsBlog = await this.postsRepo.existsById(id);
-
-    if (!existsBlog) {
-      throw new HttpException(`Post with id ${id} not found`, HttpStatus.NOT_FOUND);
-    }
-    await this.postsService.deletePost(id);
+  async deletePost(@Param() params: PostByIdDto) {
+    await this.postsService.deletePost(params.id);
   }
 }

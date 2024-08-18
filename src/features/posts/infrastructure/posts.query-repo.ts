@@ -3,9 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostDocument } from '../domain/posts.entity';
 import { Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
-import { LikeStatus, PostOutputModel, WithLikesInfo } from '../api/models/output/post.output.model';
+import { LikeStatus, PostOutputModel, WithLikesInfo } from '../api/dto/output/post.output.model';
 import { Pagination } from '../../../common/types';
-import { QueryParamsDTO } from '../../../common/types/interfaces';
+import { PostsQueryParamsDto } from '../api/dto/input/posts-query-params.dto';
 
 const filter = (blogId?: string) => {
   return blogId
@@ -126,7 +126,7 @@ export class PostsQueryRepo {
   };
 
   async findAll(
-    queryParams: QueryParamsDTO,
+    queryParams: PostsQueryParamsDto,
     blogId?: string
   ): Promise<Pagination<WithLikesInfo<PostOutputModel>[]>> {
     const posts = await this.postModel.aggregate([

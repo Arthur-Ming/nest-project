@@ -2,22 +2,21 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Blog } from '../domain/blogs.entity';
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
-import { CreateBlogDto } from '../application/dto/create-blog.dto';
-import { UpdateBlogDto } from '../application/dto/update-blog.dto';
 import { ObjectId } from 'mongodb';
+import { UpdateBlogDto } from '../api/dto/input/update-blog.dto';
 
 @Injectable()
 export class BlogsRepo {
   constructor(@InjectModel(Blog.name) private blogModel: Model<Blog>) {}
-  async add(createBlogDTO: CreateBlogDto) {
-    const newBlog = await this.blogModel.create(createBlogDTO);
+  async add(blog: Blog) {
+    const newBlog = await this.blogModel.create(blog);
     return newBlog._id.toString();
   }
-  async update(blogId: string, input: UpdateBlogDto): Promise<boolean> {
+  async update(blogId: string, dto: UpdateBlogDto): Promise<boolean> {
     const updateResult = await this.blogModel.updateOne(
       { _id: new ObjectId(blogId) },
       {
-        $set: input,
+        $set: dto,
       }
     );
 

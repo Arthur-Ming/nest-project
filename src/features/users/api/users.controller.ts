@@ -12,10 +12,10 @@ import {
 } from '@nestjs/common';
 import { UsersService } from '../application/users.service';
 import { UsersQueryRepo } from '../infrastructure/users.query-repo';
-import { UsersInputBody } from './models/input/users.input.model';
-import { UsersQueryParamsInputModel } from './models/input/users-query-params.input.model';
-import { setPaginationForUsers } from '../../../utils/set-pagination';
+import { CreateUserDto } from './dto/input/create-user.dto';
+import { UsersQueryParamsDto } from './dto/input/users-query-params.dto';
 import { UsersRepo } from '../infrastructure/users.repo';
+import { UserByIdDto } from './dto/input/user-by-id.dto';
 
 @Controller('users')
 export class UsersController {
@@ -28,25 +28,20 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   getUsers(
     @Query()
-    queryParams: UsersQueryParamsInputModel
+    queryParams: UsersQueryParamsDto
   ) {
-    return this.usersQueryRepo.findAll(setPaginationForUsers(queryParams));
+    return this.usersQueryRepo.findAll(queryParams);
   }
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  addUser(@Body() addUserModel: UsersInputBody) {
+  addUser(@Body() addUserModel: CreateUserDto) {
     const addedUser = this.usersService.addUser(addUserModel);
     return addedUser;
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteUser(@Param('id') id: string) {
-    const existsBlog = await this.usersRepo.existsById(id);
-
-    if (!existsBlog) {
-      throw new HttpException(`Post with id ${id} not found`, HttpStatus.NOT_FOUND);
-    }
-    await this.usersService.deleteUser(id);
+  async deleteUser(@Param() params: UserByIdDto) {
+    await this.usersService.deleteUser(params.id);
   }
 }

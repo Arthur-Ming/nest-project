@@ -1,4 +1,4 @@
-import { SortDirections } from '../../../../common/types/interfaces';
+import { SortDirections } from '../../../../common/types/enum';
 
 export interface UsersQueryParamsDto {
   sortBy: string;

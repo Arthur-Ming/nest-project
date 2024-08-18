@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../domain/users.entity';
 import { Model } from 'mongoose';
 import { Pagination } from '../../../common/types';
-import { UsersOutputModel } from '../api/models/output/users.output.model';
+import { UsersOutputModel } from '../api/dto/output/users.output.model';
 import { userMapToOutput } from '../application/utils/user-map-to-output';
 
 import { UsersQueryParamsDto } from '../application/dto/users-query-params.dto';
