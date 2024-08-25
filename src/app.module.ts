@@ -5,6 +5,7 @@ import { TestingModule } from './features/testing/testing.module';
 import { UsersModule } from './features/users/users.module';
 import { PostsModule } from './features/posts/posts.module';
 import { appSettings } from './settings/app-settings';
+import { AuthModule } from './features/auth/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { appSettings } from './settings/app-settings';
         : appSettings.api.MONGO_CONNECTION_URI
     ),
     TestingModule,
+    AuthModule,
     BlogsModule,
     UsersModule,
     PostsModule,

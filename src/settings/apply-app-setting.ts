@@ -18,6 +18,7 @@ const setAppPipes = (app: INestApplication) => {
         const customErrors = {
           errorsMessages: [],
         };
+
         errors.forEach((error) => {
           const errorConstraintValues = Object.values(error.constraints as Record<string, string>);
 

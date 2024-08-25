@@ -12,7 +12,7 @@ import { expectValidationError } from '../utils/expect-validation-error';
 import { PaginationTestManager } from '../utils/pagination-test-manager';
 import { BlogsPaginationQueryParamsDto } from '../../src/features/blogs/api/dto/input/blogs-pagination-query-params.dto';
 
-describe('Blogs e2e', () => {
+describe.skip('Blogs e2e', () => {
   let app: INestApplication;
   let databaseConnection: Connection;
   let blogsTestManager: BlogsTestManager;

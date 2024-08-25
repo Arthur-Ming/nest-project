@@ -5,10 +5,9 @@ import { Model } from 'mongoose';
 import { Pagination } from '../../../common/types';
 import { UsersOutputModel } from '../api/dto/output/users.output.model';
 import { userMapToOutput } from '../application/utils/user-map-to-output';
+import { UsersPaginationQueryParamsDto } from '../api/dto/input/users-pagination-query-params.dto';
 
-import { UsersQueryParamsDto } from '../application/dto/users-query-params.dto';
-
-const filter = ({ searchEmailTerm, searchLoginTerm }: UsersQueryParamsDto) => {
+const filter = ({ searchEmailTerm, searchLoginTerm }: UsersPaginationQueryParamsDto) => {
   return {
     $or: [
       {
@@ -31,11 +30,13 @@ const filter = ({ searchEmailTerm, searchLoginTerm }: UsersQueryParamsDto) => {
 export class UsersQueryRepo {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  getTotalCount = async (queryParams: UsersQueryParamsDto) => {
+  getTotalCount = async (queryParams: UsersPaginationQueryParamsDto) => {
     return this.userModel.countDocuments(filter(queryParams));
   };
 
-  async findAll(queryParams: UsersQueryParamsDto): Promise<Pagination<UsersOutputModel[]>> {
+  async findAll(
+    queryParams: UsersPaginationQueryParamsDto
+  ): Promise<Pagination<UsersOutputModel[]>> {
     const users = await this.userModel.find(
       filter(queryParams),
       {},
