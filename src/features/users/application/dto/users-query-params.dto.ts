@@ -1,4 +1,4 @@
-import { SortDirections } from '../../../../common/types/enum';
+import { SortDirections } from '../../../../common/enum/sort-directions';
 
 export interface UsersQueryParamsDto {
   sortBy: string;

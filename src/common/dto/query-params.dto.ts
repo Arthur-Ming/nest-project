@@ -2,7 +2,7 @@ import { IsInt, IsOptional, IsPositive, IsString } from 'class-validator';
 import { DefaultQueryParams } from '../constans/default-query-params';
 import { IsSortDirection } from '../decorators/validate/is-sort-direction';
 import { ToNumber } from '../decorators/transform/to-number';
-import { SortDirections } from '../types/enum';
+import { SortDirections } from '../enum/sort-directions';
 
 export class BasePaginationQueryParamsDto {
   @IsOptional()

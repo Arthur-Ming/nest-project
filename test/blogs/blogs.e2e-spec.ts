@@ -12,7 +12,7 @@ import { expectValidationError } from '../utils/expect-validation-error';
 import { PaginationTestManager } from '../utils/pagination-test-manager';
 import { BlogsPaginationQueryParamsDto } from '../../src/features/blogs/api/dto/input/blogs-pagination-query-params.dto';
 
-describe.skip('Blogs e2e', () => {
+describe('Blogs e2e', () => {
   let app: INestApplication;
   let databaseConnection: Connection;
   let blogsTestManager: BlogsTestManager;
@@ -25,7 +25,7 @@ describe.skip('Blogs e2e', () => {
     blogsTestManager = new BlogsTestManager(app);
   });
 
-  describe.skip('Blogs e2e blogs creating', () => {
+  describe('Blogs e2e blogs creating', () => {
     beforeAll(async () => {
       await deleteCollections(databaseConnection);
     });
@@ -71,7 +71,7 @@ describe.skip('Blogs e2e', () => {
       blogsTestManager.expectCorrectModel(resBody);
     });
   });
-  describe.skip('Blogs e2e blogs reading', () => {
+  describe('Blogs e2e blogs reading', () => {
     beforeAll(async () => {
       await deleteCollections(databaseConnection);
     });
@@ -96,7 +96,7 @@ describe.skip('Blogs e2e', () => {
       await blogsTestManager.getBlogById(someId, HttpStatus.NOT_FOUND);
     });
   });
-  describe.skip('Blogs e2e blogs updating', () => {
+  describe('Blogs e2e blogs updating', () => {
     beforeAll(async () => {
       await deleteCollections(databaseConnection);
     });
@@ -147,7 +147,7 @@ describe.skip('Blogs e2e', () => {
       });
     });
   });
-  describe.skip('Blogs e2e blogs deleting', () => {
+  describe('Blogs e2e blogs deleting', () => {
     beforeAll(async () => {
       await deleteCollections(databaseConnection);
     });

@@ -1,6 +1,6 @@
 import { registerDecorator, ValidationOptions } from 'class-validator';
 import { BadRequestException } from '@nestjs/common';
-import { SortDirections } from '../../types/enum';
+import { SortDirections } from '../../enum/sort-directions';
 
 export function IsSortDirection(property?: string, validationOptions?: ValidationOptions) {
   return function (object: object, propertyName: string) {
