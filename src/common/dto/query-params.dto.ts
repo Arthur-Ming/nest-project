@@ -4,11 +4,7 @@ import { IsSortDirection } from '../decorators/validate/is-sort-direction';
 import { ToNumber } from '../decorators/transform/to-number';
 import { SortDirections } from '../types/enum';
 
-export class QueryParamsDto {
-  @IsOptional()
-  @IsString()
-  searchNameTerm: string = DefaultQueryParams.searchNameTerm;
-
+export class BasePaginationQueryParamsDto {
   @IsOptional()
   @IsString()
   sortBy: string = DefaultQueryParams.sortBy;

@@ -55,4 +55,10 @@ export class UsersQueryRepo {
       items: users.map((user) => userMapToOutput(user)),
     };
   }
+
+  async findById(userId: string) {
+    const user = await this.userModel.findById(userId);
+    if (!user) return null;
+    return userMapToOutput(user);
+  }
 }

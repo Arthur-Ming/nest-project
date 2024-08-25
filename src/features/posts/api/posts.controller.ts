@@ -15,7 +15,7 @@ import { PostsQueryRepo } from '../infrastructure/posts.query-repo';
 import { UpdatePostDto } from './dto/input/update-post.dto';
 import { CreatePostDto } from './dto/input/create-post.dto';
 import { PostByIdDto } from './dto/input/post-by-id.dto';
-import { PostsQueryParamsDto } from './dto/input/posts-query-params.dto';
+import { PostsPaginationQueryParamsDto } from './dto/input/posts-pagination-query-params.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -26,7 +26,7 @@ export class PostsController {
   @Get()
   async getAll(
     @Query()
-    queryParams: PostsQueryParamsDto
+    queryParams: PostsPaginationQueryParamsDto
   ) {
     return await this.postsQueryRepo.findAll(queryParams);
   }

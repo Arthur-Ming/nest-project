@@ -19,7 +19,7 @@ import { BlogsRepo } from '../infrastructure/blogs.repo';
 import { UpdateBlogDto } from './dto/input/update-blog.dto';
 import { ResultStatusEnum } from '../../../base/result/result-status.enum';
 import { BlogByIdDto } from './dto/input/blog-by-id.dto';
-import { BlogsQueryParamsDto } from './dto/input/blogs-query-params.dto';
+import { BlogsPaginationQueryParamsDto } from './dto/input/blogs-pagination-query-params.dto';
 
 @Controller('blogs')
 export class BlogsController {
@@ -32,7 +32,7 @@ export class BlogsController {
   @Get()
   getBlogs(
     @Query()
-    queryParams: BlogsQueryParamsDto
+    queryParams: BlogsPaginationQueryParamsDto
   ) {
     return this.blogsQueryRepo.findByQueryParams(queryParams);
   }
@@ -48,7 +48,7 @@ export class BlogsController {
   async getPostsForSpecificBlog(
     @Param() params: BlogByIdDto,
     @Query()
-    queryParams: BlogsQueryParamsDto
+    queryParams: BlogsPaginationQueryParamsDto
   ) {
     return await this.postsQueryRepo.findAll(queryParams, params.id);
   }

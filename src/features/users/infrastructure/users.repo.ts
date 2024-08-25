@@ -11,7 +11,7 @@ export class UsersRepo {
 
   async add(addUserDTO: AddUserDto) {
     const addedUser = await this.userModel.create(addUserDTO);
-    return addedUser;
+    return addedUser._id.toString();
   }
 
   async remove(userId: string) {
