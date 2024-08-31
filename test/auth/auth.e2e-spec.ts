@@ -7,6 +7,9 @@ import { UsersTestManager } from '../users/utils/users-test-manager';
 import { createUserDtoMock } from '../users/mock-data/create-user.dto.mock';
 import { expectValidationError } from '../utils/expect-validation-error';
 import { correctBasicAuthCredentials } from '../users/constants/credentials';
+import { entitiesNum } from '../posts/constants/entities-num';
+import { appSettings } from '../../src/settings/app-settings';
+import { wait } from '../utils/wait';
 
 describe('Auth e2e', () => {
   let app: INestApplication;
@@ -65,13 +68,37 @@ describe('Auth e2e', () => {
 
     it('shouldn`t register already exists user', async () => {
       const res = await authTestManager.registerUser(
-        { ...createUserDtoMock, email: 'example1@example.com' },
+        { ...createUserDtoMock, login: 'aaaaaaa' },
         HttpStatus.BAD_REQUEST
       );
-      expectValidationError(res.body, ['login']);
+      expectValidationError(res.body, ['email']);
     });
   });
+  describe('Auth e2e user registration rate limiting', () => {
+    beforeAll(async () => {
+      await deleteCollections(databaseConnection);
+    });
 
+    it('shouldn`t registration rate limiting', async () => {
+      await wait(10);
+      const firstRequest = 1;
+      for (let i = firstRequest; i < entitiesNum; i++) {
+        const expectedStatusCode =
+          i > appSettings.api.RATE_LIMITING_LIMIT
+            ? HttpStatus.TOO_MANY_REQUESTS
+            : HttpStatus.NO_CONTENT;
+
+        await authTestManager.registerUser(
+          {
+            ...createUserDtoMock,
+            email: i + createUserDtoMock.email,
+            login: i + createUserDtoMock.login,
+          },
+          expectedStatusCode
+        );
+      }
+    }, 20000);
+  });
   afterAll(async () => {
     await app.close();
   });

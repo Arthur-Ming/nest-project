@@ -21,7 +21,9 @@ import { ResultStatusEnum } from '../../../base/result/result-status.enum';
 import { BlogByIdDto } from './dto/input/blog-by-id.dto';
 import { BlogsPaginationQueryParamsDto } from './dto/input/blogs-pagination-query-params.dto';
 import { BlogsRoutes } from '../routes/blogs-routes';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Controller(BlogsRoutes.base)
 export class BlogsController {
   constructor(

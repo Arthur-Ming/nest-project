@@ -6,9 +6,17 @@ import { UsersModule } from './features/users/users.module';
 import { PostsModule } from './features/posts/posts.module';
 import { appSettings } from './settings/app-settings';
 import { AuthModule } from './features/auth/auth.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([
+      {
+        ttl: appSettings.api.RATE_LIMITING_TTL,
+        limit: appSettings.api.RATE_LIMITING_LIMIT,
+      },
+    ]),
     MongooseModule.forRoot(
       appSettings.env.isTesting()
         ? appSettings.api.MONGO_CONNECTION_URI_FOR_TESTS
@@ -21,6 +29,11 @@ import { AuthModule } from './features/auth/auth.module';
     PostsModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

@@ -44,13 +44,14 @@ class APISettings {
 
   public readonly MONGO_CONNECTION_URI: string;
   public readonly MONGO_CONNECTION_URI_FOR_TESTS: string;
+  public readonly RATE_LIMITING_TTL = 10000;
+  public readonly RATE_LIMITING_LIMIT = 5;
 
   constructor(private readonly envVariables: EnvironmentVariable) {
     this.APP_PORT = this.getNumberOrDefault(envVariables.APP_PORT, 3000);
     this.HASH_ROUNDS = this.getNumberOrDefault(envVariables.HASH_ROUNDS, 10);
     this.ADMIN_LOGIN = envVariables.ADMIN_PASSWORD ?? 'admin';
     this.ADMIN_PASSWORD = envVariables.ADMIN_PASSWORD ?? 'qwerty';
-
     this.MONGO_CONNECTION_URI = envVariables.MONGO_CONNECTION_URI ?? 'mongodb://localhost/nest';
     this.MONGO_CONNECTION_URI_FOR_TESTS =
       envVariables.MONGO_CONNECTION_URI_FOR_TESTS ?? 'mongodb://localhost/test';

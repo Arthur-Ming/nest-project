@@ -16,7 +16,8 @@ import { UpdatePostDto } from './dto/input/update-post.dto';
 import { CreatePostDto } from './dto/input/create-post.dto';
 import { PostByIdDto } from './dto/input/post-by-id.dto';
 import { PostsPaginationQueryParamsDto } from './dto/input/posts-pagination-query-params.dto';
-
+import { SkipThrottle } from '@nestjs/throttler';
+@SkipThrottle()
 @Controller('posts')
 export class PostsController {
   constructor(

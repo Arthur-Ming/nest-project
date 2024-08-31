@@ -27,5 +27,14 @@ import { IsUserExistByEmailConstraint } from './decorators/validate/is-user-exis
       useValue: appSettings,
     },
   ],
+  exports: [
+    UsersService,
+    UsersRepo,
+    UsersQueryRepo,
+    IsUserExistConstraint,
+    IsUserExistByLoginConstraint,
+    IsUserExistByEmailConstraint,
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+  ],
 })
 export class UsersModule {}
