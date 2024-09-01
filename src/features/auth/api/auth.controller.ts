@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Post,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -12,6 +14,9 @@ import { AuthService } from '../application/auth.service';
 import { SkipThrottle } from '@nestjs/throttler';
 import { LoginUserDto } from './dto/input/login-user.dto';
 import { ResultStatusEnum } from '../../../base/result/result-status.enum';
+import { AccessTokenPayloadDto } from './dto/output/access-token-payload.dto';
+import { ExtractAccessToken } from '../decorators/extract-access-token';
+import { DecodeJwtTokenPipe } from '../pipes/decode-jwt-token.pipe';
 
 @SkipThrottle()
 @Controller(AuthRoutes.base)
@@ -35,5 +40,15 @@ export class AuthController {
     if (result.status === ResultStatusEnum.Success) {
       return { accessToken };
     }
+  }
+
+  @Get(AuthRoutes.me)
+  @HttpCode(HttpStatus.OK)
+  async authMe(@ExtractAccessToken(DecodeJwtTokenPipe) payload: AccessTokenPayloadDto) {
+    const result = await this.authService.authMe(payload.userId);
+    if (result.status === ResultStatusEnum.NotFound) {
+      throw new NotFoundException();
+    }
+    return result.getData();
   }
 }

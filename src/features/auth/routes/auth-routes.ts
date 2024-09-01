@@ -4,4 +4,5 @@ export enum AuthRoutes {
   base = resources.auth,
   registration = 'registration',
   login = 'login',
+  me = 'me',
 }

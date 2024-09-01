@@ -2,9 +2,11 @@ import { BadRequestException, INestApplication, ValidationPipe } from '@nestjs/c
 import { HttpExceptionFilter } from '../utils/http-exception.filter';
 import { useContainer } from 'class-validator';
 import { AppModule } from '../app.module';
+import cookieParser from 'cookie-parser';
 
 export const applyAppSettings = (app: INestApplication) => {
   app.enableCors();
+  app.use(cookieParser());
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   setAppPipes(app);
   app.useGlobalFilters(new HttpExceptionFilter());

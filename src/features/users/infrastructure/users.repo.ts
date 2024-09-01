@@ -34,4 +34,10 @@ export class UsersRepo {
     if (!user) return null;
     return user;
   }
+
+  async findById(userId: string) {
+    const user = await this.userModel.findById(userId);
+    if (!user) return null;
+    return user;
+  }
 }

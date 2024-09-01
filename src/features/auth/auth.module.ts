@@ -4,9 +4,9 @@ import { AuthService } from './application/auth.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../users/domain/users.entity';
 import { CryptoService } from '../../services/crypto/crypto.service';
-
 import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
+import { appSettings, AppSettings } from '../../settings/app-settings';
 
 @Module({
   imports: [
@@ -15,6 +15,13 @@ import { JwtModule } from '@nestjs/jwt';
     UsersModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, CryptoService],
+  providers: [
+    AuthService,
+    CryptoService,
+    {
+      provide: AppSettings,
+      useValue: appSettings,
+    },
+  ],
 })
 export class AuthModule {}

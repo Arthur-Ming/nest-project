@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { appSettings } from '../../../settings/app-settings';
 import { InterlayerNotice } from '../../../base/result/result';
 import { ResultStatusEnum } from '../../../base/result/result-status.enum';
+import { AuthMeDto } from '../api/dto/output/auth-me.dto';
 
 @Injectable()
 export class AuthService {
@@ -36,5 +37,18 @@ export class AuthService {
       expiresIn: appSettings.api.ACCESS_TOKEN_EXPIRES_IN,
     });
     return new InterlayerNotice(ResultStatusEnum.Success, { accessToken });
+  }
+
+  async authMe(userId) {
+    const user = await this.usersRepo.findById(userId);
+    if (!user) {
+      return new InterlayerNotice(ResultStatusEnum.NotFound);
+    }
+
+    return new InterlayerNotice<AuthMeDto>(ResultStatusEnum.Success, {
+      userId,
+      email: user.email,
+      login: user.login,
+    });
   }
 }
