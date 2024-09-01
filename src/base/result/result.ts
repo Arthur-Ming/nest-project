@@ -1,7 +1,7 @@
 import { ResultStatusEnum } from './result-status.enum';
 import { HttpException } from '@nestjs/common';
 
-export class InterlayerNotice<T = null> {
+export class InterlayerNotice<T> {
   readonly status: ResultStatusEnum;
   // errorMessage?: string;
   // extensions?: ResultExtension[];
@@ -12,7 +12,7 @@ export class InterlayerNotice<T = null> {
     this.status = status;
     //  this.extensions = [];
   }
-  getData(): T {
+  getData() {
     if (this.data === null) {
       throw new HttpException('!!!', 500);
     }

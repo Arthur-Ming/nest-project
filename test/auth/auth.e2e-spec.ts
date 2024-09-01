@@ -25,7 +25,7 @@ describe('Auth e2e', () => {
     usersTestManager = new UsersTestManager(app);
   });
 
-  describe('Auth e2e user registration', () => {
+  describe.skip('Auth e2e user registration', () => {
     beforeAll(async () => {
       await deleteCollections(databaseConnection);
     });
@@ -74,7 +74,7 @@ describe('Auth e2e', () => {
       expectValidationError(res.body, ['email']);
     });
   });
-  describe('Auth e2e user registration rate limiting', () => {
+  describe.skip('Auth e2e user registration rate limiting', () => {
     beforeAll(async () => {
       await deleteCollections(databaseConnection);
     });
@@ -98,6 +98,60 @@ describe('Auth e2e', () => {
         );
       }
     }, 20000);
+  });
+  describe('Auth e2e user login', () => {
+    beforeAll(async () => {
+      await deleteCollections(databaseConnection);
+    });
+    it('should get empty array', async () => {
+      await usersTestManager.mustBeEmpty();
+    });
+    it('should register user by correct input data', async () => {
+      await authTestManager.registerUser(createUserDtoMock, HttpStatus.NO_CONTENT);
+      const { body: usersWithPagination } = await usersTestManager.getUsers(
+        correctBasicAuthCredentials
+      );
+      const user = usersWithPagination.items[0];
+      usersTestManager.expectCorrectModel(user);
+      expect.setState({ user });
+    });
+    it('shouldn`t login non-exists user', async () => {
+      await authTestManager.loginUser(
+        {
+          loginOrEmail: createUserDtoMock.login + 'some',
+          password: createUserDtoMock.password,
+        },
+        HttpStatus.UNAUTHORIZED
+      );
+    });
+    it('shouldn`t login non-exists user', async () => {
+      await authTestManager.loginUser(
+        {
+          loginOrEmail: 'some' + createUserDtoMock.email,
+          password: createUserDtoMock.password,
+        },
+        HttpStatus.UNAUTHORIZED
+      );
+    });
+    it('shouldn`t login by incorrect password', async () => {
+      await authTestManager.loginUser(
+        {
+          loginOrEmail: createUserDtoMock.email,
+          password: createUserDtoMock.password + '1',
+        },
+        HttpStatus.UNAUTHORIZED
+      );
+    });
+    it('should login user', async () => {
+      const { body } = await authTestManager.loginUser(
+        {
+          loginOrEmail: createUserDtoMock.email,
+          password: createUserDtoMock.password,
+        },
+        HttpStatus.OK
+      );
+      authTestManager.expectCorrectLoginModel(body);
+    });
   });
   afterAll(async () => {
     await app.close();

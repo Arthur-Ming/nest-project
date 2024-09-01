@@ -27,4 +27,11 @@ export class UsersRepo {
   existsByEmail(email: string) {
     return this.userModel.exists({ email });
   }
+  async findByLoginOrEmail(loginOrEmail: string) {
+    const user = await this.userModel.findOne({
+      $or: [{ email: loginOrEmail }, { login: loginOrEmail }],
+    });
+    if (!user) return null;
+    return user;
+  }
 }

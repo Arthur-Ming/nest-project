@@ -46,6 +46,9 @@ class APISettings {
   public readonly MONGO_CONNECTION_URI_FOR_TESTS: string;
   public readonly RATE_LIMITING_TTL = 10000;
   public readonly RATE_LIMITING_LIMIT = 5;
+  public readonly JWT_SECRET: string;
+  public readonly ACCESS_TOKEN_EXPIRES_IN = '10h';
+  public readonly REFRESH_TOKEN_EXPIRES_IN = '20h';
 
   constructor(private readonly envVariables: EnvironmentVariable) {
     this.APP_PORT = this.getNumberOrDefault(envVariables.APP_PORT, 3000);
@@ -55,6 +58,7 @@ class APISettings {
     this.MONGO_CONNECTION_URI = envVariables.MONGO_CONNECTION_URI ?? 'mongodb://localhost/nest';
     this.MONGO_CONNECTION_URI_FOR_TESTS =
       envVariables.MONGO_CONNECTION_URI_FOR_TESTS ?? 'mongodb://localhost/test';
+    this.JWT_SECRET = envVariables.JWT_SECRET || 'secret';
   }
 
   private getNumberOrDefault(value: string | number | undefined, defaultValue: number): number {
