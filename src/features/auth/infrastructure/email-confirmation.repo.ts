@@ -26,4 +26,18 @@ export class EmailConfirmationRepo {
     if (!result) return null;
     return result;
   }
+
+  async setConfirmed(confirmationCode: string) {
+    const updateResult = await this.emailConfirmationModel.updateOne(
+      {
+        confirmationCode: confirmationCode,
+      },
+      {
+        $set: {
+          isConfirmed: true,
+        },
+      }
+    );
+    return updateResult.matchedCount === 1;
+  }
 }

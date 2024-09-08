@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -37,10 +36,7 @@ export class AuthController {
   @Post(AuthRoutes.registrationConfirmation)
   @HttpCode(HttpStatus.NO_CONTENT)
   async registrationConfirmation(@Body() dto: ConfirmDto) {
-    const result = await this.authService.registrationConfirmation(dto.code);
-    if (result.status === ResultStatusEnum.BadRequest) {
-      throw new BadRequestException();
-    }
+    await this.authService.registrationConfirmation(dto.code);
   }
 
   @Post(AuthRoutes.login)

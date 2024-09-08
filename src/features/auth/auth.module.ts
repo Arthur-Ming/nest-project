@@ -10,6 +10,7 @@ import { appSettings, AppSettings } from '../../settings/app-settings';
 import { MailAdapterModule } from '../../common/adapters/mail-adapter/mail-adapter.module';
 import { EmailConfirmationRepo } from './infrastructure/email-confirmation.repo';
 import { EmailConfirmation, EmailConfirmationSchema } from './domain/email-confirmation.entity';
+import { ConfirmCodeValidateConstraint } from './decorators/validate/confirm-code.validate';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { EmailConfirmation, EmailConfirmationSchema } from './domain/email-confi
     AuthService,
     CryptoService,
     EmailConfirmationRepo,
+    ConfirmCodeValidateConstraint,
     {
       provide: AppSettings,
       useValue: appSettings,
