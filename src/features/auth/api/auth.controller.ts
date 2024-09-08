@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -19,6 +20,7 @@ import { AccessTokenPayloadDto } from './dto/output/access-token-payload.dto';
 import { ExtractAccessToken } from '../decorators/extract-access-token';
 import { DecodeJwtTokenPipe } from '../pipes/decode-jwt-token.pipe';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { ConfirmDto } from './dto/input/confirm.dto';
 
 @SkipThrottle()
 @Controller(AuthRoutes.base)
@@ -29,6 +31,16 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async registration(@Body() dto: CreateUserDto) {
     await this.authService.registration(dto);
+  }
+
+  @SkipThrottle({ default: false })
+  @Post(AuthRoutes.registrationConfirmation)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async registrationConfirmation(@Body() dto: ConfirmDto) {
+    const result = await this.authService.registrationConfirmation(dto.code);
+    if (result.status === ResultStatusEnum.BadRequest) {
+      throw new BadRequestException();
+    }
   }
 
   @Post(AuthRoutes.login)

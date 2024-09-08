@@ -43,7 +43,18 @@ export class AuthService {
 
     this.mailAdapter.sendMail([dto.email], confirmationCode);
   }
-
+  async registrationConfirmation(confirmCode: string) {
+    const confirmation = await this.emailConfirmationRepo.findByConfirmationCode(confirmCode);
+    console.log(confirmation);
+    if (
+      !confirmation ||
+      confirmation.isConfirmed ||
+      confirmation.expirationDate < Number(new Date())
+    ) {
+      return new InterlayerNotice(ResultStatusEnum.BadRequest);
+    }
+    return new InterlayerNotice(ResultStatusEnum.Success);
+  }
   async login(dto: LoginUserDto) {
     const user = await this.usersRepo.findByLoginOrEmail(dto.loginOrEmail);
     if (!user) {
