@@ -35,4 +35,10 @@ export class AuthTestManager {
       .set({ 'user-agent': deviceName })
       .expect(statusCode);
   }
+  async authMe(accessToken: string, statusCode: number = HttpStatus.OK) {
+    return await request(this.app.getHttpServer())
+      .get(buildRoute(AuthRoutes.base, AuthRoutes.me))
+      .auth(accessToken, { type: 'bearer' })
+      .expect(statusCode);
+  }
 }

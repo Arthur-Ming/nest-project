@@ -9,6 +9,11 @@ import { appSettings } from '../../../settings/app-settings';
 import { InterlayerNotice } from '../../../base/result/result';
 import { ResultStatusEnum } from '../../../base/result/result-status.enum';
 import { AuthMeDto } from '../api/dto/output/auth-me.dto';
+import { MailAdapter } from '../../../common/adapters/mail-adapter/mail.adapter';
+import { EmailConfirmationRepo } from '../infrastructure/email-confirmation.repo';
+import { ObjectId } from 'mongodb';
+import { add } from 'date-fns';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
@@ -16,10 +21,27 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly usersRepo: UsersRepo,
     private readonly cryptoService: CryptoService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly mailAdapter: MailAdapter,
+    private readonly emailConfirmationRepo: EmailConfirmationRepo
   ) {}
   async registration(dto: CreateUserDto) {
-    await this.usersService.addUser(dto);
+    const userId = await this.usersService.addUser(dto);
+    const confirmationCode = uuidv4();
+    const expirationDate = Number(
+      add(new Date(), {
+        minutes: 30,
+      })
+    );
+
+    await this.emailConfirmationRepo.add({
+      userId: new ObjectId(userId),
+      confirmationCode,
+      expirationDate,
+      isConfirmed: false,
+    });
+
+    this.mailAdapter.sendMail([dto.email], confirmationCode);
   }
 
   async login(dto: LoginUserDto) {

@@ -49,6 +49,8 @@ class APISettings {
   public readonly JWT_SECRET: string;
   public readonly ACCESS_TOKEN_EXPIRES_IN = '10h';
   public readonly REFRESH_TOKEN_EXPIRES_IN = '20h';
+  public readonly EMAIL: string;
+  public readonly EMAIL_PASSWORD: string;
 
   constructor(private readonly envVariables: EnvironmentVariable) {
     this.APP_PORT = this.getNumberOrDefault(envVariables.APP_PORT, 3000);
@@ -59,6 +61,8 @@ class APISettings {
     this.MONGO_CONNECTION_URI_FOR_TESTS =
       envVariables.MONGO_CONNECTION_URI_FOR_TESTS ?? 'mongodb://localhost/test';
     this.JWT_SECRET = envVariables.JWT_SECRET || 'secret';
+    this.EMAIL = envVariables.EMAIL || '';
+    this.EMAIL_PASSWORD = envVariables.EMAIL_PASSWORD || '';
   }
 
   private getNumberOrDefault(value: string | number | undefined, defaultValue: number): number {

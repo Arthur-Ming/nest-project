@@ -151,6 +151,16 @@ describe('Auth e2e', () => {
         HttpStatus.OK
       );
       authTestManager.expectCorrectLoginModel(body);
+      expect.setState({
+        accessToken: body.accessToken,
+      });
+    });
+    it('shouldn`t auth me by invalid token', async () => {
+      await authTestManager.authMe('123', HttpStatus.UNAUTHORIZED);
+    });
+    it('should auth me by valid token', async () => {
+      const { accessToken } = expect.getState();
+      await authTestManager.authMe(accessToken, HttpStatus.OK);
     });
   });
   afterAll(async () => {

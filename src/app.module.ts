@@ -8,6 +8,7 @@ import { appSettings } from './settings/app-settings';
 import { AuthModule } from './features/auth/auth.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
@@ -22,6 +23,15 @@ import { APP_GUARD } from '@nestjs/core';
         ? appSettings.api.MONGO_CONNECTION_URI_FOR_TESTS
         : appSettings.api.MONGO_CONNECTION_URI
     ),
+    MailerModule.forRoot({
+      transport: {
+        service: 'gmail',
+        auth: {
+          user: appSettings.api.EMAIL,
+          pass: appSettings.api.EMAIL_PASSWORD,
+        },
+      },
+    }),
     TestingModule,
     AuthModule,
     BlogsModule,
