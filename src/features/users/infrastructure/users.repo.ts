@@ -40,4 +40,16 @@ export class UsersRepo {
     if (!user) return null;
     return user;
   }
+
+  async updatePassword(userId: string, newPasswordHash: string) {
+    const updateResult = await this.userModel.updateOne(
+      { _id: new ObjectId(userId) },
+      {
+        $set: {
+          password: newPasswordHash,
+        },
+      }
+    );
+    return updateResult.matchedCount === 1;
+  }
 }

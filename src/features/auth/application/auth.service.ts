@@ -15,6 +15,7 @@ import { add } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import { MailerService } from '@nestjs-modules/mailer';
 import { CodeRecoveryRepo } from '../infrastructure/code-recovery.repo';
+import { NewPasswordDto } from '../api/dto/input/new-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -82,6 +83,7 @@ export class AuthService {
       .catch(() => {
         console.log('!!');
       });
+    return new InterlayerNotice(ResultStatusEnum.Success);
   }
   async registrationConfirmation(confirmCode: string) {
     await this.emailConfirmationRepo.setConfirmed(confirmCode);
@@ -131,5 +133,14 @@ export class AuthService {
       email: user.email,
       login: user.login,
     });
+  }
+
+  async newPassword(dto: NewPasswordDto) {
+    const recoveryCode = await this.codeRecoveryRepo.findById(dto.recoveryCode);
+    if (!recoveryCode) {
+      return new InterlayerNotice(ResultStatusEnum.NotFound);
+    }
+    await this.usersService.updatePassword(recoveryCode.userId.toString(), dto.newPassword);
+    return new InterlayerNotice(ResultStatusEnum.Success);
   }
 }

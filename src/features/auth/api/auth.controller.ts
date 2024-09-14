@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -22,6 +23,7 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { ConfirmDto } from './dto/input/confirm.dto';
 import { RegistrationEmailResendingDto } from './dto/input/registration-email-resending.dto';
 import { PasswordRecoveryDto } from './dto/input/password-recovery.dto';
+import { NewPasswordDto } from './dto/input/new-password.dto';
 
 @SkipThrottle()
 @Controller(AuthRoutes.base)
@@ -37,7 +39,17 @@ export class AuthController {
   @Post(AuthRoutes.passwordRecovery)
   @HttpCode(HttpStatus.NO_CONTENT)
   async passwordRecovery(@Body() dto: PasswordRecoveryDto) {
-    await this.authService.passwordRecovery(dto.email);
+    const result = await this.authService.passwordRecovery(dto.email);
+    if (result.status === ResultStatusEnum.NotFound) {
+      throw new BadRequestException();
+    }
+  }
+
+  @SkipThrottle({ default: false })
+  @Post(AuthRoutes.newPassword)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async newPassword(@Body() dto: NewPasswordDto) {
+    await this.authService.newPassword(dto);
   }
   @SkipThrottle({ default: false })
   @Post(AuthRoutes.registrationConfirmation)
