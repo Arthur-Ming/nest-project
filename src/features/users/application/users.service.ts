@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { UsersRepo } from '../infrastructure/users.repo';
 import { CryptoService } from '../../../services/crypto/crypto.service';
 import { CreateUserDto } from '../api/dto/input/create-user.dto';
-import { userMapToOutput } from './utils/user-map-to-output';
 
 @Injectable()
 export class UsersService {
@@ -13,14 +12,16 @@ export class UsersService {
 
   async addUser(addUserModel: CreateUserDto) {
     const hash = await this.cryptoService.hash(addUserModel.password);
-    const newUser = await this.usersRepo.add({
+    return await this.usersRepo.add({
       password: hash,
       login: addUserModel.login,
       email: addUserModel.email,
       createdAt: Number(new Date()),
     });
-
-    return userMapToOutput(newUser);
+  }
+  async updatePassword(userId: string, newPassword: string) {
+    const hash = await this.cryptoService.hash(newPassword);
+    return this.usersRepo.updatePassword(userId, hash);
   }
 
   async deleteUser(userId: string) {

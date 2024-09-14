@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import { LikeStatus, PostOutputModel, WithLikesInfo } from '../api/dto/output/post.output.model';
 import { Pagination } from '../../../common/types';
-import { PostsQueryParamsDto } from '../api/dto/input/posts-query-params.dto';
+import { PostsPaginationQueryParamsDto } from '../api/dto/input/posts-pagination-query-params.dto';
 
 const filter = (blogId?: string) => {
   return blogId
@@ -126,7 +126,7 @@ export class PostsQueryRepo {
   };
 
   async findAll(
-    queryParams: PostsQueryParamsDto,
+    queryParams: PostsPaginationQueryParamsDto,
     blogId?: string
   ): Promise<Pagination<WithLikesInfo<PostOutputModel>[]>> {
     const posts = await this.postModel.aggregate([

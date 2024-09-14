@@ -7,10 +7,34 @@ import { UsersRepo } from './infrastructure/users.repo';
 import { UsersQueryRepo } from './infrastructure/users.query-repo';
 import { CryptoService } from '../../services/crypto/crypto.service';
 import { IsUserExistConstraint } from './decorators/validate/is-user-exist';
+import { appSettings, AppSettings } from '../../settings/app-settings';
+import { IsUserExistByLoginConstraint } from './decorators/validate/is-user-exist-by-login';
+import { IsUserExistByEmailConstraint } from './decorators/validate/is-user-exist-by-email';
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])],
   controllers: [UsersController],
-  providers: [UsersService, UsersRepo, UsersQueryRepo, CryptoService, IsUserExistConstraint],
+  providers: [
+    UsersService,
+    UsersRepo,
+    UsersQueryRepo,
+    CryptoService,
+    IsUserExistConstraint,
+    IsUserExistByLoginConstraint,
+    IsUserExistByEmailConstraint,
+    {
+      provide: AppSettings,
+      useValue: appSettings,
+    },
+  ],
+  exports: [
+    UsersService,
+    UsersRepo,
+    UsersQueryRepo,
+    IsUserExistConstraint,
+    IsUserExistByLoginConstraint,
+    IsUserExistByEmailConstraint,
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+  ],
 })
 export class UsersModule {}

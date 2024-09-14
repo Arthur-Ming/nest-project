@@ -1,6 +1,5 @@
 import { registerDecorator, ValidationOptions } from 'class-validator';
-import { BadRequestException } from '@nestjs/common';
-import { SortDirections } from '../../types/enum';
+import { SortDirections } from '../../enum/sort-directions';
 
 export function IsSortDirection(property?: string, validationOptions?: ValidationOptions) {
   return function (object: object, propertyName: string) {
@@ -9,12 +8,15 @@ export function IsSortDirection(property?: string, validationOptions?: Validatio
       target: object.constructor,
       propertyName: propertyName,
       constraints: [property],
-      options: validationOptions,
+      options: {
+        ...validationOptions,
+        message: 'SortDirection must be asc or desc',
+      },
       validator: {
         validate(value: any) {
           const s = SortDirections.hasOwnProperty(value);
           if (!s) {
-            throw new BadRequestException('SortDirection must be asc or desc ');
+            return false;
           }
           return s;
         },

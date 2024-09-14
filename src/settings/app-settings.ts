@@ -44,16 +44,25 @@ class APISettings {
 
   public readonly MONGO_CONNECTION_URI: string;
   public readonly MONGO_CONNECTION_URI_FOR_TESTS: string;
+  public readonly RATE_LIMITING_TTL = 10000;
+  public readonly RATE_LIMITING_LIMIT = 5;
+  public readonly JWT_SECRET: string;
+  public readonly ACCESS_TOKEN_EXPIRES_IN = '10h';
+  public readonly REFRESH_TOKEN_EXPIRES_IN = '20h';
+  public readonly EMAIL: string;
+  public readonly EMAIL_PASSWORD: string;
 
   constructor(private readonly envVariables: EnvironmentVariable) {
     this.APP_PORT = this.getNumberOrDefault(envVariables.APP_PORT, 3000);
     this.HASH_ROUNDS = this.getNumberOrDefault(envVariables.HASH_ROUNDS, 10);
     this.ADMIN_LOGIN = envVariables.ADMIN_PASSWORD ?? 'admin';
     this.ADMIN_PASSWORD = envVariables.ADMIN_PASSWORD ?? 'qwerty';
-
     this.MONGO_CONNECTION_URI = envVariables.MONGO_CONNECTION_URI ?? 'mongodb://localhost/nest';
     this.MONGO_CONNECTION_URI_FOR_TESTS =
       envVariables.MONGO_CONNECTION_URI_FOR_TESTS ?? 'mongodb://localhost/test';
+    this.JWT_SECRET = envVariables.JWT_SECRET || 'secret';
+    this.EMAIL = envVariables.EMAIL || '';
+    this.EMAIL_PASSWORD = envVariables.EMAIL_PASSWORD || '';
   }
 
   private getNumberOrDefault(value: string | number | undefined, defaultValue: number): number {

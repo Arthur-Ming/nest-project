@@ -19,9 +19,12 @@ import { BlogsRepo } from '../infrastructure/blogs.repo';
 import { UpdateBlogDto } from './dto/input/update-blog.dto';
 import { ResultStatusEnum } from '../../../base/result/result-status.enum';
 import { BlogByIdDto } from './dto/input/blog-by-id.dto';
-import { BlogsQueryParamsDto } from './dto/input/blogs-query-params.dto';
+import { BlogsPaginationQueryParamsDto } from './dto/input/blogs-pagination-query-params.dto';
+import { BlogsRoutes } from '../routes/blogs-routes';
+import { SkipThrottle } from '@nestjs/throttler';
 
-@Controller('blogs')
+@SkipThrottle()
+@Controller(BlogsRoutes.base)
 export class BlogsController {
   constructor(
     private blogsService: BlogsService,
@@ -32,23 +35,23 @@ export class BlogsController {
   @Get()
   getBlogs(
     @Query()
-    queryParams: BlogsQueryParamsDto
+    queryParams: BlogsPaginationQueryParamsDto
   ) {
     return this.blogsQueryRepo.findByQueryParams(queryParams);
   }
 
-  @Get(':id')
+  @Get(BlogsRoutes.byId)
   @HttpCode(HttpStatus.OK)
   async getBlogById(@Param() params: BlogByIdDto) {
     return await this.blogsQueryRepo.findById(params.id);
   }
 
-  @Get(':id/posts')
+  @Get(BlogsRoutes.postsForSpecificBlog)
   @HttpCode(HttpStatus.OK)
   async getPostsForSpecificBlog(
     @Param() params: BlogByIdDto,
     @Query()
-    queryParams: BlogsQueryParamsDto
+    queryParams: BlogsPaginationQueryParamsDto
   ) {
     return await this.postsQueryRepo.findAll(queryParams, params.id);
   }
@@ -61,7 +64,7 @@ export class BlogsController {
     }
   }
 
-  @Post(':id/posts')
+  @Post(BlogsRoutes.postsForSpecificBlog)
   @HttpCode(HttpStatus.CREATED)
   async addPostForSpecificBlog(
     @Param() params: BlogByIdDto,
@@ -73,13 +76,13 @@ export class BlogsController {
     );
     return this.postsQueryRepo.findById(addedPostId);
   }
-  @Put(':id')
+  @Put(BlogsRoutes.byId)
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateBlog(@Param() params: BlogByIdDto, @Body() updateBlogDto: UpdateBlogDto) {
     await this.blogsService.updateBlog(params.id, updateBlogDto);
   }
 
-  @Delete(':id')
+  @Delete(BlogsRoutes.byId)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlog(@Param() params: BlogByIdDto) {
     await this.blogsService.deleteBlog(params.id);

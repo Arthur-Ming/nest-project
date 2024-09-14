@@ -4,39 +4,41 @@ import {
   Delete,
   Get,
   HttpCode,
-  HttpException,
   HttpStatus,
   Param,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from '../application/users.service';
 import { UsersQueryRepo } from '../infrastructure/users.query-repo';
 import { CreateUserDto } from './dto/input/create-user.dto';
-import { UsersQueryParamsDto } from './dto/input/users-query-params.dto';
-import { UsersRepo } from '../infrastructure/users.repo';
+import { UsersPaginationQueryParamsDto } from './dto/input/users-pagination-query-params.dto';
 import { UserByIdDto } from './dto/input/user-by-id.dto';
+import { BasicAuthGuard } from '../../../common/guards/basic-auth.guard';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
+@UseGuards(BasicAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(
     private usersService: UsersService,
-    private usersQueryRepo: UsersQueryRepo,
-    private usersRepo: UsersRepo
+    private usersQueryRepo: UsersQueryRepo
   ) {}
   @Get()
   @HttpCode(HttpStatus.OK)
   getUsers(
     @Query()
-    queryParams: UsersQueryParamsDto
+    queryParams: UsersPaginationQueryParamsDto
   ) {
     return this.usersQueryRepo.findAll(queryParams);
   }
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  addUser(@Body() addUserModel: CreateUserDto) {
-    const addedUser = this.usersService.addUser(addUserModel);
-    return addedUser;
+  async addUser(@Body() addUserModel: CreateUserDto) {
+    const addedUserId = await this.usersService.addUser(addUserModel);
+    return await this.usersQueryRepo.findById(addedUserId);
   }
 
   @Delete(':id')

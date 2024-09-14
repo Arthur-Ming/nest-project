@@ -11,5 +11,12 @@ import { IsPostExistConstraint } from './decorators/validate/is-post-exist';
   imports: [MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }])],
   controllers: [PostsController],
   providers: [PostsService, PostsRepo, PostsQueryRepo, IsPostExistConstraint],
+  exports: [
+    PostsService,
+    PostsRepo,
+    PostsQueryRepo,
+    IsPostExistConstraint,
+    MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
+  ],
 })
 export class PostsModule {}
