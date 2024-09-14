@@ -20,6 +20,8 @@ import { ExtractAccessToken } from '../decorators/extract-access-token';
 import { DecodeJwtTokenPipe } from '../pipes/decode-jwt-token.pipe';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { ConfirmDto } from './dto/input/confirm.dto';
+import { RegistrationEmailResendingDto } from './dto/input/registration-email-resending.dto';
+import { PasswordRecoveryDto } from './dto/input/password-recovery.dto';
 
 @SkipThrottle()
 @Controller(AuthRoutes.base)
@@ -31,14 +33,24 @@ export class AuthController {
   async registration(@Body() dto: CreateUserDto) {
     await this.authService.registration(dto);
   }
-
+  @SkipThrottle({ default: false })
+  @Post(AuthRoutes.passwordRecovery)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async passwordRecovery(@Body() dto: PasswordRecoveryDto) {
+    await this.authService.passwordRecovery(dto.email);
+  }
   @SkipThrottle({ default: false })
   @Post(AuthRoutes.registrationConfirmation)
   @HttpCode(HttpStatus.NO_CONTENT)
   async registrationConfirmation(@Body() dto: ConfirmDto) {
     await this.authService.registrationConfirmation(dto.code);
   }
-
+  @SkipThrottle({ default: false })
+  @Post(AuthRoutes.registrationEmailResending)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async registrationEmailResending(@Body() dto: RegistrationEmailResendingDto) {
+    await this.authService.registrationEmailResending(dto.email);
+  }
   @Post(AuthRoutes.login)
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginUserDto) {

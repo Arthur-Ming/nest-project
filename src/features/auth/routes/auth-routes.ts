@@ -5,5 +5,8 @@ export enum AuthRoutes {
   registration = 'registration',
   login = 'login',
   registrationConfirmation = 'registration-confirmation',
+  registrationEmailResending = 'registration-email-resending',
   me = 'me',
+  newPassword = 'new-password',
+  passwordRecovery = 'password-recovery',
 }

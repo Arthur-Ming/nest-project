@@ -27,6 +27,12 @@ export class EmailConfirmationRepo {
     return result;
   }
 
+  async findByEmail(email: string) {
+    const result = await this.emailConfirmationModel.findOne({ email });
+    if (!result) return null;
+    return result;
+  }
+
   async setConfirmed(confirmationCode: string) {
     const updateResult = await this.emailConfirmationModel.updateOne(
       {
@@ -39,5 +45,21 @@ export class EmailConfirmationRepo {
       }
     );
     return updateResult.matchedCount === 1;
+  }
+  async updateConfirmationCodeByEmail(email: string, newConfirmCode: string) {
+    const updateResult = await this.emailConfirmationModel.updateOne(
+      {
+        email,
+      },
+      {
+        $set: {
+          confirmationCode: newConfirmCode,
+        },
+      }
+    );
+    return updateResult.matchedCount === 1;
+  }
+  existsByEmail(email: string) {
+    return this.emailConfirmationModel.exists({ email });
   }
 }

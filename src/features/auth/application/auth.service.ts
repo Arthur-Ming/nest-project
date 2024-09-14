@@ -5,15 +5,16 @@ import { LoginUserDto } from '../api/dto/input/login-user.dto';
 import { UsersRepo } from '../../users/infrastructure/users.repo';
 import { CryptoService } from '../../../services/crypto/crypto.service';
 import { JwtService } from '@nestjs/jwt';
-import { appSettings } from '../../../settings/app-settings';
+import { AppSettings, appSettings } from '../../../settings/app-settings';
 import { InterlayerNotice } from '../../../base/result/result';
 import { ResultStatusEnum } from '../../../base/result/result-status.enum';
 import { AuthMeDto } from '../api/dto/output/auth-me.dto';
-import { MailAdapter } from '../../../common/adapters/mail-adapter/mail.adapter';
 import { EmailConfirmationRepo } from '../infrastructure/email-confirmation.repo';
 import { ObjectId } from 'mongodb';
 import { add } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
+import { MailerService } from '@nestjs-modules/mailer';
+import { CodeRecoveryRepo } from '../infrastructure/code-recovery.repo';
 
 @Injectable()
 export class AuthService {
@@ -22,8 +23,10 @@ export class AuthService {
     private readonly usersRepo: UsersRepo,
     private readonly cryptoService: CryptoService,
     private readonly jwtService: JwtService,
-    private readonly mailAdapter: MailAdapter,
-    private readonly emailConfirmationRepo: EmailConfirmationRepo
+    private readonly emailConfirmationRepo: EmailConfirmationRepo,
+    private readonly mailerService: MailerService,
+    private readonly codeRecoveryRepo: CodeRecoveryRepo,
+    private readonly appSettings: AppSettings
   ) {}
   async registration(dto: CreateUserDto) {
     const userId = await this.usersService.addUser(dto);
@@ -41,11 +44,64 @@ export class AuthService {
       isConfirmed: false,
     });
 
-    this.mailAdapter.sendMail([dto.email], confirmationCode);
+    this.mailerService
+      .sendMail({
+        from: `"Arthur 👻" <${this.appSettings.api.EMAIL}>`,
+        to: dto.email, // list of receivers
+        subject: 'Hello ✔', // Subject line
+        html: ` <h1>Thank for your registration</h1>
+                <p>To finish registration please follow the link below:
+                <a href='https://somesite.com/confirm-email?code=${confirmationCode}'>complete registration</a>
+   </p>`,
+      })
+      .catch(() => {
+        console.log('!!');
+      });
   }
 
+  async passwordRecovery(email: string) {
+    const user = await this.usersRepo.findByLoginOrEmail(email);
+    if (!user) {
+      return new InterlayerNotice(ResultStatusEnum.NotFound);
+    }
+    const recoveryCode = await this.codeRecoveryRepo.add({
+      userId: new ObjectId(user._id),
+      createdAt: Number(Date.now()),
+    });
+    this.mailerService
+      .sendMail({
+        from: `"Arthur 👻" <${this.appSettings.api.EMAIL}>`,
+        to: email, // list of receivers
+        subject: 'Hello ✔', // Subject line
+        html: `<h1>Password recovery</h1>
+    <p>To finish password recovery please follow the link below:
+    <a href='https://somesite.com/password-recovery?recoveryCode=${recoveryCode}'>recovery password</a>
+     
+  </p>`,
+      })
+      .catch(() => {
+        console.log('!!');
+      });
+  }
   async registrationConfirmation(confirmCode: string) {
     await this.emailConfirmationRepo.setConfirmed(confirmCode);
+  }
+  async registrationEmailResending(email: string) {
+    const newConfirmCode = uuidv4();
+    await this.emailConfirmationRepo.updateConfirmationCodeByEmail(email, newConfirmCode);
+    this.mailerService
+      .sendMail({
+        from: `"Arthur 👻" <${this.appSettings.api.EMAIL}>`,
+        to: email, // list of receivers
+        subject: 'Hello ✔', // Subject line
+        html: ` <h1>Thank for your registration</h1>
+                <p>To finish registration please follow the link below:
+                <a href='https://somesite.com/confirm-email?code=${newConfirmCode}'>complete registration</a>
+   </p>`,
+      })
+      .catch(() => {
+        console.log('!!');
+      });
   }
   async login(dto: LoginUserDto) {
     const user = await this.usersRepo.findByLoginOrEmail(dto.loginOrEmail);
