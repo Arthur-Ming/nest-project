@@ -20,7 +20,7 @@ export class IsUserExistByEmailConstraint implements ValidatorConstraintInterfac
 export function IsUserExistByEmail(property?: string, validationOptions?: ValidationOptions) {
   return function (object: object, propertyName: string) {
     registerDecorator({
-      name: 'IsUserExistByLogin',
+      name: 'IsUserExistByEmail',
       target: object.constructor,
       propertyName: propertyName,
       constraints: [property],
