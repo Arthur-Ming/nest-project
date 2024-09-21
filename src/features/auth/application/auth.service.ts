@@ -90,7 +90,14 @@ export class AuthService {
   }
   async registrationEmailResending(email: string) {
     const newConfirmCode = uuidv4();
-    await this.emailConfirmationRepo.updateConfirmationCodeByEmail(email, newConfirmCode);
+    const user = await this.usersRepo.findByLoginOrEmail(email);
+    if (!user) {
+      return null;
+    }
+    await this.emailConfirmationRepo.updateConfirmationCodeByUserId(
+      user._id.toString(),
+      newConfirmCode
+    );
     this.mailerService
       .sendMail({
         from: `"Arthur 👻" <${this.appSettings.api.EMAIL}>`,

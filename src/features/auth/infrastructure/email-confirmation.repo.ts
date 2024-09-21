@@ -27,8 +27,8 @@ export class EmailConfirmationRepo {
     return result;
   }
 
-  async findByEmail(email: string) {
-    const result = await this.emailConfirmationModel.findOne({ email });
+  async findByUserId(userId: string) {
+    const result = await this.emailConfirmationModel.findOne({ userId: new ObjectId(userId) });
     if (!result) return null;
     return result;
   }
@@ -46,10 +46,10 @@ export class EmailConfirmationRepo {
     );
     return updateResult.matchedCount === 1;
   }
-  async updateConfirmationCodeByEmail(email: string, newConfirmCode: string) {
+  async updateConfirmationCodeByUserId(userId: string, newConfirmCode: string) {
     const updateResult = await this.emailConfirmationModel.updateOne(
       {
-        email,
+        userId: new ObjectId(userId),
       },
       {
         $set: {
