@@ -11,8 +11,10 @@ import { BlogsTestManager } from './utils/blogs-test-manager';
 import { expectValidationError } from '../utils/expect-validation-error';
 import { PaginationTestManager } from '../utils/pagination-test-manager';
 import { BlogsPaginationQueryParamsDto } from '../../src/features/blogs/api/dto/input/blogs-pagination-query-params.dto';
+import { aDescribe } from '../utils/aDescribe';
+import { BlogTestNamesEnum } from './constants/blog-test-names.enum';
 
-describe.skip('Blogs e2e', () => {
+aDescribe(BlogTestNamesEnum.blogsAll)('Blogs e2e', () => {
   let app: INestApplication;
   let databaseConnection: Connection;
   let blogsTestManager: BlogsTestManager;
@@ -25,7 +27,7 @@ describe.skip('Blogs e2e', () => {
     blogsTestManager = new BlogsTestManager(app);
   });
 
-  describe('Blogs e2e blogs creating', () => {
+  aDescribe(BlogTestNamesEnum.blogsCreating)('Blogs e2e blogs creating', () => {
     beforeAll(async () => {
       await deleteCollections(databaseConnection);
     });
@@ -71,7 +73,7 @@ describe.skip('Blogs e2e', () => {
       blogsTestManager.expectCorrectModel(resBody);
     });
   });
-  describe('Blogs e2e blogs reading', () => {
+  aDescribe(BlogTestNamesEnum.blogsReading)('Blogs e2e blogs reading', () => {
     beforeAll(async () => {
       await deleteCollections(databaseConnection);
     });
@@ -96,7 +98,7 @@ describe.skip('Blogs e2e', () => {
       await blogsTestManager.getBlogById(someId, HttpStatus.NOT_FOUND);
     });
   });
-  describe('Blogs e2e blogs updating', () => {
+  aDescribe(BlogTestNamesEnum.blogsUpdating)('Blogs e2e blogs updating', () => {
     beforeAll(async () => {
       await deleteCollections(databaseConnection);
     });
@@ -147,7 +149,7 @@ describe.skip('Blogs e2e', () => {
       });
     });
   });
-  describe('Blogs e2e blogs deleting', () => {
+  aDescribe(BlogTestNamesEnum.blogsDeleting)('Blogs e2e blogs deleting', () => {
     beforeAll(async () => {
       await deleteCollections(databaseConnection);
     });
@@ -172,7 +174,7 @@ describe.skip('Blogs e2e', () => {
       await blogsTestManager.getBlogById(createdBlog.id, HttpStatus.NOT_FOUND);
     });
   });
-  describe('Blogs e2e get with pagination', () => {
+  aDescribe(BlogTestNamesEnum.blogsPagination)('Blogs e2e get with pagination', () => {
     beforeAll(async () => {
       await deleteCollections(databaseConnection);
     });
