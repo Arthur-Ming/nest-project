@@ -1,9 +1,6 @@
-import { ICreatePostDto } from './create-post.dto';
+import { CreatePostDto, ICreatePostDto } from './create-post.dto';
 
-export class CreatePostForSpecifiedBlogDto {
-  title: string;
-  shortDescription: string;
-  content: string;
+export class CreatePostForSpecifiedBlogDto extends CreatePostDto {
   blogId: string;
   constructor(
     blogId: string,
@@ -13,6 +10,7 @@ export class CreatePostForSpecifiedBlogDto {
       content: 'content',
     }
   ) {
+    super();
     this.title = dto.title;
     this.shortDescription = dto.shortDescription;
     this.content = dto.content;

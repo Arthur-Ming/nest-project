@@ -17,7 +17,7 @@ import { ExpectedPostDto } from './dto/output/expected-post.dto';
 import { CreatePostForSpecifiedBlogDto } from './dto/input/create-post-for-specified-blog.dto';
 import { BlogsTestManager } from '../blogs/utils/blogs-test-manager';
 import { PostsTestManager } from './utils/posts-test-manager';
-import { CreatePostDto } from './dto/input/create-post.dto';
+import { UpdatePostDto } from './dto/input/update-post.dto';
 
 aDescribe(PostsTestNamesEnum.postsAll)('Posts e2e', () => {
   let app: INestApplication;
@@ -67,41 +67,37 @@ aDescribe(PostsTestNamesEnum.postsAll)('Posts e2e', () => {
     });
     it('should create entity for specified blog with correct input data', async function () {
       const { createdBlog } = expect.getState();
-      const createPostDto = new CreatePostDto();
+      const createPostForSpecifiedBlogDto = new CreatePostForSpecifiedBlogDto(createdBlog.id);
 
-      const { body: createdPost } = await req
-        .post('/blogs' + '/' + createdBlog.id + '/' + 'posts')
-        .send(createPostDto)
-        .expect(HttpStatus.CREATED);
-      const expectedPostDto = new ExpectedPostDto(createPostDto, createdBlog);
-      postsTestManager.expectCorrectModel(createdPost, expectedPostDto);
-      // expect(createdPost).toMatchObject(new ExpectedPostDto(addPostDto, createdBlog));
+      const { body: createdPostForSpecifiedBlo } = await postsTestManager.createPostForSpecificBlog(
+        createPostForSpecifiedBlogDto
+      );
+      const expectedPostDto = new ExpectedPostDto(createPostForSpecifiedBlogDto, createdBlog);
+      postsTestManager.expectCorrectModel(createdPostForSpecifiedBlo, expectedPostDto);
     });
     it('should get entity by correct id', async function () {
       const { createdPost } = expect.getState();
-      const { body: post } = await req.get('/posts' + '/' + createdPost.id).expect(HttpStatus.OK);
-
-      expect(post).toMatchObject(createdPost);
+      const { body: post } = await postsTestManager.getPostById(createdPost.id); //req.get('/posts' + '/' + createdPost.id).expect(HttpStatus.OK);
+      postsTestManager.expectCorrectModel(post, createdPost);
     });
 
-    // it('should update entity with correct input data', async function () {
-    //   const { createdPost, createdBlog } = expect.getState();
-    //   const updatePostDto = updatePostDtoCreator(createdBlog.id);
-    //   await req
-    //     .put('/posts' + '/' + createdPost.id)
-    //     .send(updatePostDto)
-    //     .expect(HttpStatus.NO_CONTENT);
-    //
-    //   const { body: updatedPost } = await req.get('/posts' + '/' + createdPost.id);
-    //   expect(updatedPost).toMatchObject(postDtoCreator(updatePostDto, createdBlog));
-    // });
-    //
-    // it('should delete entity by correct id', async function () {
-    //   const { createdPost } = expect.getState();
-    //
-    //   await req.delete('/posts' + '/' + createdPost.id).expect(HttpStatus.NO_CONTENT);
-    //   await req.get('/posts' + '/' + createdPost.id).expect(HttpStatus.NOT_FOUND);
-    // });
+    it('should update entity with correct input data', async function () {
+      const { createdPost, createdBlog } = expect.getState();
+
+      const updatePostDto = new UpdatePostDto(createdBlog.id, { ...createdPost, title: 'updated' });
+      const { body: updatedPost } = await postsTestManager.updatePost(
+        updatePostDto,
+        createdPost.id
+      );
+
+      postsTestManager.expectCorrectModel(updatePostDto, updatedPost);
+    });
+
+    it('should delete entity by correct id', async function () {
+      const { createdPost } = expect.getState();
+      await postsTestManager.deletePostById(createdPost.id);
+      await postsTestManager.getPostById(createdPost.id, HttpStatus.NOT_FOUND);
+    });
   });
 
   aDescribe(PostsTestNamesEnum.postsPagination)('Posts e2e get with pagination', () => {

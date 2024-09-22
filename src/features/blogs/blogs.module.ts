@@ -12,5 +12,6 @@ import { PostsModule } from '../posts/posts.module';
   imports: [MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]), PostsModule],
   controllers: [BlogsController],
   providers: [BlogsService, BlogsQueryRepo, BlogsRepo, IsBlogExistConstraint],
+  exports: [BlogsService, BlogsQueryRepo, IsBlogExistConstraint],
 })
 export class BlogsModule {}
