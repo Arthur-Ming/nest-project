@@ -37,5 +37,14 @@ import { CodeRecoveryRepo } from './infrastructure/code-recovery.repo';
       useValue: appSettings,
     },
   ],
+  exports: [
+    AuthService,
+    CryptoService,
+    JwtModule.register({}),
+    {
+      provide: AppSettings,
+      useValue: appSettings,
+    },
+  ],
 })
 export class AuthModule {}

@@ -51,6 +51,7 @@ class APISettings {
   public readonly REFRESH_TOKEN_EXPIRES_IN = '20h';
   public readonly EMAIL: string;
   public readonly EMAIL_PASSWORD: string;
+  public readonly COOKIE_SECURE: true;
 
   constructor(private readonly envVariables: EnvironmentVariable) {
     this.APP_PORT = this.getNumberOrDefault(envVariables.APP_PORT, 3000);

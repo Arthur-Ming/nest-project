@@ -1,13 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostDocument } from '../domain/posts.entity';
+import { Post } from '../domain/posts.entity';
 import { Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import { LikeStatus, PostOutputModel, WithLikesInfo } from '../api/dto/output/post.output.model';
 import { Pagination } from '../../../common/types';
 import { PostsPaginationQueryParamsDto } from '../api/dto/input/posts-pagination-query-params.dto';
 
-const filter = (blogId?: string) => {
+const getCurrentUserLikeStatus = (likes: any[], currentUserId: string | null): LikeStatus => {
+  if (!currentUserId) {
+    return LikeStatus.None;
+  }
+  const currentUserLike = likes.find((like) => like.authorId.toString() === currentUserId);
+  if (!currentUserLike) {
+    return LikeStatus.None;
+  }
+
+  return currentUserLike.status;
+};
+
+const filter = (blogId: string | null) => {
   return blogId
     ? {
         blogId: new ObjectId(blogId),
@@ -18,8 +30,8 @@ const filter = (blogId?: string) => {
 export class PostsQueryRepo {
   constructor(@InjectModel(Post.name) private postModel: Model<Post>) {}
   private mapToOutput = (
-    post: PostDocument & { blogName: string }
-    //requestUserId?: string
+    post: any, //PostDocument & { blogName: string }
+    requestUserId: string | null
   ): WithLikesInfo<PostOutputModel> => {
     return {
       id: post._id.toString(),
@@ -29,25 +41,19 @@ export class PostsQueryRepo {
       blogId: post.blogId.toString(),
       blogName: post.blogName,
       createdAt: new Date(post.createdAt).toISOString(),
-      // extendedLikesInfo: {
-      //   likesCount: post.likes.filter((like) => like.status === LikeStatus.Like).length,
-      //   dislikesCount: post.likes.filter((like) => like.status === LikeStatus.Dislike).length,
-      //   myStatus: getCurrentUserLikeStatus(post.likes, requestUserId),
-      //   newestLikes: post.likes
-      //     .filter((like) => like.status === LikeStatus.Like)
-      //     .sort((a, b) => Number(new Date(b.createdAt)) - Number(new Date(a.createdAt)))
-      //     .map((like) => ({
-      //       addedAt: like.createdAt.toISOString(),
-      //       userId: like.likeAuthor?._id ? like.likeAuthor._id.toString() : null,
-      //       login: like.likeAuthor?.login ? like.likeAuthor.login : null,
-      //     }))
-      //     .slice(0, 3),
-      // },
       extendedLikesInfo: {
-        likesCount: 0,
-        dislikesCount: 0,
-        myStatus: LikeStatus.None,
-        newestLikes: [],
+        likesCount: post.likes.filter((like) => like.status === LikeStatus.Like).length,
+        dislikesCount: post.likes.filter((like) => like.status === LikeStatus.Dislike).length,
+        myStatus: getCurrentUserLikeStatus(post.likes, requestUserId),
+        newestLikes: post.likes
+          .filter((like) => like.status === LikeStatus.Like)
+          .sort((a, b) => Number(new Date(b.createdAt)) - Number(new Date(a.createdAt)))
+          .map((like) => ({
+            addedAt: new Date(like.createdAt).toISOString(),
+            userId: like.likeAuthor?._id ? like.likeAuthor._id.toString() : null,
+            login: like.likeAuthor?.login ? like.likeAuthor.login : null,
+          }))
+          .slice(0, 3),
       },
     };
   };
@@ -64,7 +70,7 @@ export class PostsQueryRepo {
 
       {
         $lookup: {
-          from: 'posts_likes',
+          from: 'postlikes',
           localField: '_id',
           foreignField: 'postId',
           as: 'likes',
@@ -107,10 +113,10 @@ export class PostsQueryRepo {
       },
     ];
   };
-  getTotalCount = async (blogId?: string) => {
+  getTotalCount = async (blogId: string | null) => {
     return this.postModel.countDocuments(filter(blogId));
   };
-  findById = async (postId: string /*, requestUserId?: string*/) => {
+  findById = async (postId: string, requestUserId: string | null) => {
     const posts = await this.postModel.aggregate([
       {
         $match: { _id: new ObjectId(postId) },
@@ -122,12 +128,13 @@ export class PostsQueryRepo {
       return null;
     }
 
-    return this.mapToOutput(posts[0] /*,requestUserId*/);
+    return this.mapToOutput(posts[0], requestUserId);
   };
 
   async findAll(
     queryParams: PostsPaginationQueryParamsDto,
-    blogId?: string
+    requestUserId: string | null,
+    blogId: string | null
   ): Promise<Pagination<WithLikesInfo<PostOutputModel>[]>> {
     const posts = await this.postModel.aggregate([
       {
@@ -145,7 +152,7 @@ export class PostsQueryRepo {
       page: queryParams.pageNumber,
       pageSize: queryParams.pageSize,
       totalCount: totalCount,
-      items: posts.map((post) => this.mapToOutput(post)),
+      items: posts.map((post) => this.mapToOutput(post, requestUserId)),
     };
   }
 }

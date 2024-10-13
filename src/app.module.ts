@@ -9,6 +9,7 @@ import { AuthModule } from './features/auth/auth.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { CommentsModule } from './features/comments/comments.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
     BlogsModule,
     UsersModule,
     PostsModule,
+    CommentsModule,
   ],
   controllers: [],
   providers: [
