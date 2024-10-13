@@ -126,7 +126,12 @@ export class AuthService {
       secret: appSettings.api.JWT_SECRET,
       expiresIn: appSettings.api.ACCESS_TOKEN_EXPIRES_IN,
     });
-    return new InterlayerNotice(ResultStatusEnum.Success, { accessToken });
+
+    const refreshToken = await this.jwtService.signAsync(accessTokenPayload, {
+      secret: appSettings.api.JWT_SECRET,
+      expiresIn: appSettings.api.ACCESS_TOKEN_EXPIRES_IN,
+    });
+    return new InterlayerNotice(ResultStatusEnum.Success, { accessToken, refreshToken });
   }
 
   async authMe(userId) {

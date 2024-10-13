@@ -3,10 +3,18 @@ import { PostsRepo } from '../infrastructure/posts.repo';
 import { ObjectId } from 'mongodb';
 import { UpdatePostDto } from '../api/dto/input/update-post.dto';
 import { CreatePostDto } from '../api/dto/input/create-post.dto';
+import { CommentsService } from '../../comments/application/comments.service';
+import { CreateCommentDto } from '../../comments/api/dto/input/create-comment.dto';
+import { PostsLikesRepo } from '../infrastructure/posts-likes.repo';
+import { LikesStatusEnum } from '../../../common/enum/likes-status.enum';
 
 @Injectable()
 export class PostsService {
-  constructor(private postsRepo: PostsRepo) {}
+  constructor(
+    private readonly postsRepo: PostsRepo,
+    private readonly postsLikesRepo: PostsLikesRepo,
+    private readonly commentsService: CommentsService
+  ) {}
 
   async addPost(dto: CreatePostDto): Promise<{ id: string }> {
     const addedPostId = await this.postsRepo.add({
@@ -22,7 +30,20 @@ export class PostsService {
   async updatePost(id: string, updatePostDTO: UpdatePostDto) {
     await this.postsRepo.update(id, updatePostDTO);
   }
+
+  async addComment(dto: CreateCommentDto, userId: string, postId: string) {
+    return await this.commentsService.createComment(dto, userId, postId);
+  }
   async deletePost(postId: string) {
     await this.postsRepo.remove(postId);
+  }
+
+  async likePost(authorId: string, postId: string, status: LikesStatusEnum) {
+    await this.postsLikesRepo.put({
+      createdAt: Date.now(),
+      authorId: new ObjectId(authorId),
+      postId: new ObjectId(postId),
+      status,
+    });
   }
 }

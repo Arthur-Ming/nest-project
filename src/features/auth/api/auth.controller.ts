@@ -7,6 +7,7 @@ import {
   HttpStatus,
   NotFoundException,
   Post,
+  Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -24,6 +25,7 @@ import { ConfirmDto } from './dto/input/confirm.dto';
 import { RegistrationEmailResendingDto } from './dto/input/registration-email-resending.dto';
 import { PasswordRecoveryDto } from './dto/input/password-recovery.dto';
 import { NewPasswordDto } from './dto/input/new-password.dto';
+import { Response } from 'express';
 
 @SkipThrottle()
 @Controller(AuthRoutes.base)
@@ -65,13 +67,14 @@ export class AuthController {
   }
   @Post(AuthRoutes.login)
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: LoginUserDto) {
+  async login(@Body() dto: LoginUserDto, @Res({ passthrough: true }) response: Response) {
     const result = await this.authService.login(dto);
     if (result.status === ResultStatusEnum.Unauthorized) {
       throw new UnauthorizedException();
     }
-    const { accessToken } = result.getData();
+    const { accessToken, refreshToken } = result.getData();
     if (result.status === ResultStatusEnum.Success) {
+      response.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
       return { accessToken };
     }
   }

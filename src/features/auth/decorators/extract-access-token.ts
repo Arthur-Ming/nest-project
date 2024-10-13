@@ -4,5 +4,8 @@ export const ExtractAccessToken = createParamDecorator((data: unknown, ctx: Exec
   const request = ctx.switchToHttp().getRequest();
 
   const auth = request.headers['authorization'];
+  if (!auth) {
+    return null;
+  }
   return auth.split(' ')[1];
 });

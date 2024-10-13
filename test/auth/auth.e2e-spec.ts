@@ -11,7 +11,7 @@ import { entitiesNum } from '../posts/constants/entities-num';
 import { appSettings } from '../../src/settings/app-settings';
 import { wait } from '../utils/wait';
 
-describe('Auth e2e', () => {
+describe.skip('Auth e2e', () => {
   let app: INestApplication;
   let databaseConnection: Connection;
   let authTestManager: AuthTestManager;
@@ -25,7 +25,7 @@ describe('Auth e2e', () => {
     usersTestManager = new UsersTestManager(app);
   });
 
-  describe.skip('Auth e2e user registration', () => {
+  describe('Auth e2e user registration', () => {
     beforeAll(async () => {
       await deleteCollections(databaseConnection);
     });

@@ -9,7 +9,7 @@ export class CreatePostForSpecifiedBlogDto {
   title: string;
 
   @Trim()
-  @Length(3, 500)
+  @Length(3, 100)
   @IsString()
   @IsNotEmpty()
   shortDescription: string;
