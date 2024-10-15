@@ -1,9 +1,9 @@
 import { Controller, Delete, HttpCode } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { Blog } from '../blogs/domain/blogs.entity';
-import { Post } from '../posts/domain/posts.entity';
 import { User } from '../users/domain/users.entity';
+import { Blog } from '../blog-platform/blogs/domain/blogs.entity';
+import { Post } from '../blog-platform/posts/domain/posts.entity';
 
 @Controller('testing')
 export class TestingController {
