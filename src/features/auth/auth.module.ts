@@ -14,6 +14,10 @@ import { ConfirmCodeValidateConstraint } from './decorators/validate/confirm-cod
 import { IsConfirmExistByEmailConstraint } from './decorators/validate/is-confirm-exist-by-email';
 import { CodeRecovery, CodeRecoverySchema } from './domain/code-recovery.entity';
 import { CodeRecoveryRepo } from './infrastructure/code-recovery.repo';
+import { LocalStrategy } from './strategies/local.strategy';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { BasicStrategy } from './strategies/basic.strategy';
 
 @Module({
   imports: [
@@ -23,6 +27,7 @@ import { CodeRecoveryRepo } from './infrastructure/code-recovery.repo';
     JwtModule.register({}),
     UsersModule,
     MailAdapterModule,
+    PassportModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -36,10 +41,12 @@ import { CodeRecoveryRepo } from './infrastructure/code-recovery.repo';
       provide: AppSettings,
       useValue: appSettings,
     },
+    LocalStrategy,
+    JwtStrategy,
+    BasicStrategy,
   ],
   exports: [
     AuthService,
-    CryptoService,
     JwtModule.register({}),
     {
       provide: AppSettings,
