@@ -26,6 +26,8 @@ import { RegistrationEmailResendingDto } from './dto/input/registration-email-re
 import { PasswordRecoveryDto } from './dto/input/password-recovery.dto';
 import { NewPasswordDto } from './dto/input/new-password.dto';
 import { Response } from 'express';
+import { LocalAuthGuard } from '../guards/local-auth.guard';
+import { CurrentUserId } from '../decorators/current-user';
 
 @SkipThrottle()
 @Controller(AuthRoutes.base)
@@ -65,9 +67,14 @@ export class AuthController {
   async registrationEmailResending(@Body() dto: RegistrationEmailResendingDto) {
     await this.authService.registrationEmailResending(dto.email);
   }
+  @UseGuards(LocalAuthGuard)
   @Post(AuthRoutes.login)
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: LoginUserDto, @Res({ passthrough: true }) response: Response) {
+  async login(
+    @Body() dto: LoginUserDto,
+    @CurrentUserId() userId,
+    @Res({ passthrough: true }) response: Response
+  ) {
     const result = await this.authService.login(dto);
     if (result.status === ResultStatusEnum.Unauthorized) {
       throw new UnauthorizedException();

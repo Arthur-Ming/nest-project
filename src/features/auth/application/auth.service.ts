@@ -112,15 +112,26 @@ export class AuthService {
         console.log('!!');
       });
   }
+
+  async validateUser(login: string, password: string): Promise<any> {
+    const user = await this.usersRepo.findByLoginOrEmail(login);
+    if (!user) {
+      return null;
+    }
+    const isPasswordCompare = await this.cryptoService.compare(password, user.password);
+
+    if (!isPasswordCompare) {
+      return null;
+    }
+
+    return user;
+  }
   async login(dto: LoginUserDto) {
     const user = await this.usersRepo.findByLoginOrEmail(dto.loginOrEmail);
     if (!user) {
       return new InterlayerNotice(ResultStatusEnum.Unauthorized, null);
     }
-    const isPasswordCompare = await this.cryptoService.compare(dto.password, user.password);
-    if (!isPasswordCompare) {
-      return new InterlayerNotice(ResultStatusEnum.Unauthorized, null);
-    }
+
     const accessTokenPayload = { userId: user._id.toString() };
     const accessToken = await this.jwtService.signAsync(accessTokenPayload, {
       secret: appSettings.api.JWT_SECRET,
@@ -129,7 +140,7 @@ export class AuthService {
 
     const refreshToken = await this.jwtService.signAsync(accessTokenPayload, {
       secret: appSettings.api.JWT_SECRET,
-      expiresIn: appSettings.api.ACCESS_TOKEN_EXPIRES_IN,
+      expiresIn: appSettings.api.REFRESH_TOKEN_EXPIRES_IN,
     });
     return new InterlayerNotice(ResultStatusEnum.Success, { accessToken, refreshToken });
   }
