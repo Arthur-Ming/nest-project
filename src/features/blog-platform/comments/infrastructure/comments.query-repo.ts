@@ -83,7 +83,7 @@ export class CommentsQueryRepo {
       },
     ];
   };
-  findById = async (commentId: string, requestUserId: string | null) => {
+  findById = async (commentId: string, requestUserId: string | null = null) => {
     const aggregatedComments = await this.commentModel.aggregate([
       {
         $match: { _id: new ObjectId(commentId) },

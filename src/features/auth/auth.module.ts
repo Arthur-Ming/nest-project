@@ -16,7 +16,8 @@ import { CodeRecovery, CodeRecoverySchema } from './domain/code-recovery.entity'
 import { CodeRecoveryRepo } from './infrastructure/code-recovery.repo';
 import { LocalStrategy } from './strategies/local.strategy';
 import { PassportModule } from '@nestjs/passport';
-import { LocalAuthGuard } from './guards/local-auth.guard';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { BasicStrategy } from './strategies/basic.strategy';
 
 @Module({
   imports: [
@@ -41,7 +42,8 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
       useValue: appSettings,
     },
     LocalStrategy,
-    LocalAuthGuard,
+    JwtStrategy,
+    BasicStrategy,
   ],
   exports: [
     AuthService,

@@ -18,8 +18,8 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { ExtractAccessToken } from '../../../auth/decorators/extract-access-token';
 import { DecodeJwtTokenPipe } from '../../../auth/pipes/decode-jwt-token.pipe';
 import { AccessTokenPayloadDto } from '../../../auth/api/dto/output/access-token-payload.dto';
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { LikePostDto } from '../../posts/api/dto/input/like-post.dto';
+import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 
 @SkipThrottle()
 @Controller('comments')

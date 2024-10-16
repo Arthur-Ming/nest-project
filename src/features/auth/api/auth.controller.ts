@@ -17,10 +17,6 @@ import { AuthService } from '../application/auth.service';
 import { SkipThrottle } from '@nestjs/throttler';
 import { LoginUserDto } from './dto/input/login-user.dto';
 import { ResultStatusEnum } from '../../../base/result/result-status.enum';
-import { AccessTokenPayloadDto } from './dto/output/access-token-payload.dto';
-import { ExtractAccessToken } from '../decorators/extract-access-token';
-import { DecodeJwtTokenPipe } from '../pipes/decode-jwt-token.pipe';
-import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { ConfirmDto } from './dto/input/confirm.dto';
 import { RegistrationEmailResendingDto } from './dto/input/registration-email-resending.dto';
 import { PasswordRecoveryDto } from './dto/input/password-recovery.dto';
@@ -28,6 +24,7 @@ import { NewPasswordDto } from './dto/input/new-password.dto';
 import { Response } from 'express';
 import { LocalAuthGuard } from '../guards/local-auth.guard';
 import { CurrentUserId } from '../decorators/current-user';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 
 @SkipThrottle()
 @Controller(AuthRoutes.base)
@@ -88,8 +85,8 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get(AuthRoutes.me)
   @HttpCode(HttpStatus.OK)
-  async authMe(@ExtractAccessToken(DecodeJwtTokenPipe) payload: AccessTokenPayloadDto) {
-    const result = await this.authService.authMe(payload.userId);
+  async authMe(@CurrentUserId() userId) {
+    const result = await this.authService.authMe(userId);
     if (result.status === ResultStatusEnum.NotFound) {
       throw new NotFoundException();
     }

@@ -23,10 +23,11 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { ExtractAccessToken } from '../../../auth/decorators/extract-access-token';
 import { DecodeJwtTokenPipe } from '../../../auth/pipes/decode-jwt-token.pipe';
 import { AccessTokenPayloadDto } from '../../../auth/api/dto/output/access-token-payload.dto';
-import { BasicAuthGuard } from '../../../../common/guards/basic-auth.guard';
+
 import { ResultStatusEnum } from '../../../../base/result/result-status.enum';
 import { PostsQueryRepo } from '../../posts/infrastructure/posts.query-repo';
 import { CreatePostForSpecifiedBlogDto } from '../../posts/api/dto/input/create-post-for-specified-blog.dto';
+import { BasicAuthGuard } from '../../../auth/guards/basic-auth.guard';
 
 @SkipThrottle()
 @Controller(BlogsRoutes.base)

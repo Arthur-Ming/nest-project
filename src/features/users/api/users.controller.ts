@@ -15,8 +15,8 @@ import { UsersQueryRepo } from '../infrastructure/users.query-repo';
 import { CreateUserDto } from './dto/input/create-user.dto';
 import { UsersPaginationQueryParamsDto } from './dto/input/users-pagination-query-params.dto';
 import { UserByIdDto } from './dto/input/user-by-id.dto';
-import { BasicAuthGuard } from '../../../common/guards/basic-auth.guard';
 import { SkipThrottle } from '@nestjs/throttler';
+import { BasicAuthGuard } from '../../auth/guards/basic-auth.guard';
 
 @SkipThrottle()
 @UseGuards(BasicAuthGuard)

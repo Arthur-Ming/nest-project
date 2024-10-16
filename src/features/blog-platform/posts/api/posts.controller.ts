@@ -22,11 +22,12 @@ import { LikePostDto } from './dto/input/like-post.dto';
 import { ExtractAccessToken } from '../../../auth/decorators/extract-access-token';
 import { DecodeJwtTokenPipe } from '../../../auth/pipes/decode-jwt-token.pipe';
 import { AccessTokenPayloadDto } from '../../../auth/api/dto/output/access-token-payload.dto';
-import { BasicAuthGuard } from '../../../../common/guards/basic-auth.guard';
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { CommentsQueryRepo } from '../../comments/infrastructure/comments.query-repo';
 import { CommentsPaginationQueryParamsDto } from '../../comments/api/dto/input/comments-pagination-query-params.dto';
 import { CreateCommentDto } from '../../comments/api/dto/input/create-comment.dto';
+import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { CurrentUserId } from '../../../auth/decorators/current-user';
+import { BasicAuthGuard } from '../../../auth/guards/basic-auth.guard';
 
 @SkipThrottle()
 @Controller('posts')
@@ -81,11 +82,10 @@ export class PostsController {
   @HttpCode(HttpStatus.CREATED)
   async addComment(
     @Param() params: PostByIdDto,
-    @ExtractAccessToken(DecodeJwtTokenPipe) payload: AccessTokenPayloadDto,
+    @CurrentUserId() userId,
     @Body() createCommentDto: CreateCommentDto
   ) {
-    const { id } = await this.postsService.addComment(createCommentDto, payload.userId, params.id);
-    const userId = payload ? payload.userId : null;
+    const { id } = await this.postsService.addComment(createCommentDto, userId, params.id);
     return this.commentsQueryRepo.findById(id, userId);
   }
   @UseGuards(BasicAuthGuard)
