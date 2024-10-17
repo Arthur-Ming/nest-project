@@ -25,6 +25,8 @@ import { Response } from 'express';
 import { LocalAuthGuard } from '../guards/local-auth.guard';
 import { CurrentUserId } from '../decorators/current-user';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { DeviceName } from '../decorators/device-name';
+import { CurrentIp } from '../decorators/current-ip';
 
 @SkipThrottle()
 @Controller(AuthRoutes.base)
@@ -68,11 +70,17 @@ export class AuthController {
   @Post(AuthRoutes.login)
   @HttpCode(HttpStatus.OK)
   async login(
-    @Body() dto: LoginUserDto,
+    @Body() loginUserDto: LoginUserDto,
     @CurrentUserId() userId,
+    @DeviceName() deviceName,
+    @CurrentIp() currentIp,
     @Res({ passthrough: true }) response: Response
   ) {
-    const result = await this.authService.login(dto);
+    const result = await this.authService.login(loginUserDto, {
+      ip: currentIp,
+      deviceName,
+      userId,
+    });
     if (result.status === ResultStatusEnum.Unauthorized) {
       throw new UnauthorizedException();
     }

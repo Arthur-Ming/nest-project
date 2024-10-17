@@ -13,17 +13,21 @@ import { EmailConfirmation, EmailConfirmationSchema } from './domain/email-confi
 import { ConfirmCodeValidateConstraint } from './decorators/validate/confirm-code.validate';
 import { IsConfirmExistByEmailConstraint } from './decorators/validate/is-confirm-exist-by-email';
 import { CodeRecovery, CodeRecoverySchema } from './domain/code-recovery.entity';
+
 import { CodeRecoveryRepo } from './infrastructure/code-recovery.repo';
 import { LocalStrategy } from './strategies/local.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { BasicStrategy } from './strategies/basic.strategy';
+import { SessionRepo } from './infrastructure/session.repo';
+import { SessionSchema, Session } from './domain/session.entity';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     MongooseModule.forFeature([{ name: EmailConfirmation.name, schema: EmailConfirmationSchema }]),
     MongooseModule.forFeature([{ name: CodeRecovery.name, schema: CodeRecoverySchema }]),
+    MongooseModule.forFeature([{ name: Session.name, schema: SessionSchema }]),
     JwtModule.register({}),
     UsersModule,
     MailAdapterModule,
@@ -35,6 +39,7 @@ import { BasicStrategy } from './strategies/basic.strategy';
     CryptoService,
     EmailConfirmationRepo,
     CodeRecoveryRepo,
+    SessionRepo,
     ConfirmCodeValidateConstraint,
     IsConfirmExistByEmailConstraint,
     {

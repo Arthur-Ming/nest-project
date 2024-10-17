@@ -16,6 +16,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { MailerService } from '@nestjs-modules/mailer';
 import { CodeRecoveryRepo } from '../infrastructure/code-recovery.repo';
 import { NewPasswordDto } from '../api/dto/input/new-password.dto';
+import { SessionRepo } from '../infrastructure/session.repo';
+import { LoginMetadataDto } from '../api/dto/input/login-metadata.dto';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +29,7 @@ export class AuthService {
     private readonly emailConfirmationRepo: EmailConfirmationRepo,
     private readonly mailerService: MailerService,
     private readonly codeRecoveryRepo: CodeRecoveryRepo,
+    private readonly sessionRepo: SessionRepo,
     private readonly appSettings: AppSettings
   ) {}
   async registration(dto: CreateUserDto) {
@@ -126,22 +129,37 @@ export class AuthService {
 
     return user;
   }
-  async login(dto: LoginUserDto) {
-    const user = await this.usersRepo.findByLoginOrEmail(dto.loginOrEmail);
+  async login(loginUserDto: LoginUserDto, loginMetadataDto: LoginMetadataDto) {
+    const user = await this.usersRepo.findById(loginMetadataDto.userId);
     if (!user) {
       return new InterlayerNotice(ResultStatusEnum.Unauthorized, null);
     }
 
-    const accessTokenPayload = { userId: user._id.toString() };
+    const accessTokenPayload = { userId: loginMetadataDto.userId };
     const accessToken = await this.jwtService.signAsync(accessTokenPayload, {
       secret: appSettings.api.JWT_SECRET,
       expiresIn: appSettings.api.ACCESS_TOKEN_EXPIRES_IN,
     });
 
-    const refreshToken = await this.jwtService.signAsync(accessTokenPayload, {
-      secret: appSettings.api.JWT_SECRET,
-      expiresIn: appSettings.api.REFRESH_TOKEN_EXPIRES_IN,
+    const sessionId = await this.sessionRepo.add({
+      ip: loginMetadataDto.ip,
+      iat: 0,
+      exp: 0,
+      userId: user._id,
+      deviceName: loginMetadataDto.deviceName,
     });
+    const refreshToken = await this.jwtService.signAsync(
+      { sessionId },
+      {
+        secret: appSettings.api.JWT_SECRET,
+        expiresIn: appSettings.api.REFRESH_TOKEN_EXPIRES_IN,
+      }
+    );
+
+    const d = this.jwtService.decode(refreshToken);
+
+    await this.sessionRepo.update(sessionId, { iat: d.iat, exp: d.exp });
+
     return new InterlayerNotice(ResultStatusEnum.Success, { accessToken, refreshToken });
   }
 
