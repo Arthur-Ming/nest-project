@@ -166,7 +166,30 @@ export class AuthService {
   async logout(deviceId: string) {
     await this.sessionRepo.remove(deviceId);
   }
+  async refreshToken(deviceId: string) {
+    const session = await this.sessionRepo.findById(deviceId);
+    if (!session) {
+      return new InterlayerNotice(ResultStatusEnum.Unauthorized, null);
+    }
+    const accessTokenPayload = { userId: session.userId };
+    const accessToken = await this.jwtService.signAsync(accessTokenPayload, {
+      secret: appSettings.api.JWT_SECRET,
+      expiresIn: appSettings.api.ACCESS_TOKEN_EXPIRES_IN,
+    });
+    const refreshToken = await this.jwtService.signAsync(
+      { deviceId },
+      {
+        secret: appSettings.api.JWT_SECRET,
+        expiresIn: appSettings.api.REFRESH_TOKEN_EXPIRES_IN,
+      }
+    );
 
+    const d = this.jwtService.decode(refreshToken);
+
+    await this.sessionRepo.update(deviceId, { iat: d.iat, exp: d.exp });
+
+    return new InterlayerNotice(ResultStatusEnum.Success, { accessToken, refreshToken });
+  }
   async authMe(userId) {
     const user = await this.usersRepo.findById(userId);
     if (!user) {

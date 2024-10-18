@@ -98,6 +98,22 @@ export class AuthController {
   async logout(@CurrentDeviceId() deviceId) {
     await this.authService.logout(deviceId);
   }
+
+  @UseGuards(JwtRefreshTokenGuard)
+  @Post(AuthRoutes.refreshToken)
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(@CurrentDeviceId() deviceId, @Res({ passthrough: true }) response: Response) {
+    const result = await this.authService.refreshToken(deviceId);
+
+    if (result.status === ResultStatusEnum.Unauthorized) {
+      throw new UnauthorizedException();
+    }
+    const { accessToken, refreshToken } = result.getData();
+    if (result.status === ResultStatusEnum.Success) {
+      response.cookie('refreshToken', refreshToken, { httpOnly: true, secure: false });
+      return { accessToken };
+    }
+  }
   @UseGuards(JwtAuthGuard)
   @Get(AuthRoutes.me)
   @HttpCode(HttpStatus.OK)

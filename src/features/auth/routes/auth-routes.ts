@@ -5,6 +5,7 @@ export enum AuthRoutes {
   registration = 'registration',
   login = 'login',
   logout = 'logout',
+  refreshToken = `refresh-token`,
   registrationConfirmation = 'registration-confirmation',
   registrationEmailResending = 'registration-email-resending',
   me = 'me',
