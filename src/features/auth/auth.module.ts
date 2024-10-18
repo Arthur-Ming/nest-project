@@ -22,6 +22,9 @@ import { BasicStrategy } from './strategies/basic.strategy';
 import { SessionRepo } from './infrastructure/session.repo';
 import { SessionSchema, Session } from './domain/session.entity';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { SecurityDevicesController } from './api/security-devices.controller';
+import { SessionQueryRepo } from './infrastructure/session.query.repo';
+import { SecurityDevicesService } from './application/security-devices.service';
 
 @Module({
   imports: [
@@ -34,13 +37,15 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
     MailAdapterModule,
     PassportModule,
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, SecurityDevicesController],
   providers: [
     AuthService,
     CryptoService,
+    SecurityDevicesService,
     EmailConfirmationRepo,
     CodeRecoveryRepo,
     SessionRepo,
+    SessionQueryRepo,
     ConfirmCodeValidateConstraint,
     IsConfirmExistByEmailConstraint,
     {

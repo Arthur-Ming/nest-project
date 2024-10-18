@@ -68,6 +68,8 @@ export class AuthController {
   async registrationEmailResending(@Body() dto: RegistrationEmailResendingDto) {
     await this.authService.registrationEmailResending(dto.email);
   }
+
+  @SkipThrottle({ default: false })
   @UseGuards(LocalAuthGuard)
   @Post(AuthRoutes.login)
   @HttpCode(HttpStatus.OK)
@@ -88,10 +90,11 @@ export class AuthController {
     }
     const { accessToken, refreshToken } = result.getData();
     if (result.status === ResultStatusEnum.Success) {
-      response.cookie('refreshToken', refreshToken, { httpOnly: true, secure: false });
+      response.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
       return { accessToken };
     }
   }
+
   @UseGuards(JwtRefreshTokenGuard)
   @Post(AuthRoutes.logout)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -110,7 +113,7 @@ export class AuthController {
     }
     const { accessToken, refreshToken } = result.getData();
     if (result.status === ResultStatusEnum.Success) {
-      response.cookie('refreshToken', refreshToken, { httpOnly: true, secure: false });
+      response.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
       return { accessToken };
     }
   }

@@ -19,6 +19,10 @@ export class SessionRepo {
     return result;
   }
 
+  async findAllByUserId(userId: string) {
+    return this.sessionModel.find({ userId: new ObjectId(userId) });
+  }
+
   async update(sessionId: string, dto: Partial<Session>): Promise<boolean> {
     const updateResult = await this.sessionModel.updateOne(
       { _id: new ObjectId(sessionId) },
@@ -34,4 +38,11 @@ export class SessionRepo {
     const deleteResult = await this.sessionModel.deleteOne({ _id: new ObjectId(sessionId) });
     return deleteResult.deletedCount === 1;
   }
+
+  removeExcludeCurrent = async (currentDeviceId: string) => {
+    const deleteResult = await this.sessionModel.deleteMany({
+      _id: { $ne: new ObjectId(currentDeviceId) },
+    });
+    return deleteResult.deletedCount > 0;
+  };
 }
