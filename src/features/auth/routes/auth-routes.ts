@@ -4,6 +4,7 @@ export enum AuthRoutes {
   base = resources.auth,
   registration = 'registration',
   login = 'login',
+  logout = 'logout',
   registrationConfirmation = 'registration-confirmation',
   registrationEmailResending = 'registration-email-resending',
   me = 'me',

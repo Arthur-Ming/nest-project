@@ -149,7 +149,7 @@ export class AuthService {
       deviceName: loginMetadataDto.deviceName,
     });
     const refreshToken = await this.jwtService.signAsync(
-      { sessionId },
+      { deviceId: sessionId },
       {
         secret: appSettings.api.JWT_SECRET,
         expiresIn: appSettings.api.REFRESH_TOKEN_EXPIRES_IN,
@@ -161,6 +161,10 @@ export class AuthService {
     await this.sessionRepo.update(sessionId, { iat: d.iat, exp: d.exp });
 
     return new InterlayerNotice(ResultStatusEnum.Success, { accessToken, refreshToken });
+  }
+
+  async logout(deviceId: string) {
+    await this.sessionRepo.remove(deviceId);
   }
 
   async authMe(userId) {

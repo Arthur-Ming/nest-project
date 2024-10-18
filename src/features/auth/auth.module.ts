@@ -21,6 +21,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { BasicStrategy } from './strategies/basic.strategy';
 import { SessionRepo } from './infrastructure/session.repo';
 import { SessionSchema, Session } from './domain/session.entity';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { SessionSchema, Session } from './domain/session.entity';
     },
     LocalStrategy,
     JwtStrategy,
+    JwtRefreshStrategy,
     BasicStrategy,
   ],
   exports: [

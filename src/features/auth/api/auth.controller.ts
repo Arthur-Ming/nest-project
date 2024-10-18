@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Ip,
   NotFoundException,
   Post,
   Res,
@@ -26,7 +27,8 @@ import { LocalAuthGuard } from '../guards/local-auth.guard';
 import { CurrentUserId } from '../decorators/current-user';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { DeviceName } from '../decorators/device-name';
-import { CurrentIp } from '../decorators/current-ip';
+import { JwtRefreshTokenGuard } from '../guards/jwt-refresh-token.guard';
+import { CurrentDeviceId } from '../decorators/current-device-id';
 
 @SkipThrottle()
 @Controller(AuthRoutes.base)
@@ -73,11 +75,11 @@ export class AuthController {
     @Body() loginUserDto: LoginUserDto,
     @CurrentUserId() userId,
     @DeviceName() deviceName,
-    @CurrentIp() currentIp,
+    @Ip() ip,
     @Res({ passthrough: true }) response: Response
   ) {
     const result = await this.authService.login(loginUserDto, {
-      ip: currentIp,
+      ip,
       deviceName,
       userId,
     });
@@ -86,9 +88,15 @@ export class AuthController {
     }
     const { accessToken, refreshToken } = result.getData();
     if (result.status === ResultStatusEnum.Success) {
-      response.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
+      response.cookie('refreshToken', refreshToken, { httpOnly: true, secure: false });
       return { accessToken };
     }
+  }
+  @UseGuards(JwtRefreshTokenGuard)
+  @Post(AuthRoutes.logout)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async logout(@CurrentDeviceId() deviceId) {
+    await this.authService.logout(deviceId);
   }
   @UseGuards(JwtAuthGuard)
   @Get(AuthRoutes.me)
