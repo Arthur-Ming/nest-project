@@ -6,6 +6,8 @@ import { Pagination } from '../../../common/types';
 import { UsersOutputModel } from '../api/dto/output/users.output.model';
 import { userMapToOutput } from '../application/utils/user-map-to-output';
 import { UsersPaginationQueryParamsDto } from '../api/dto/input/users-pagination-query-params.dto';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 const filter = ({ searchEmailTerm, searchLoginTerm }: UsersPaginationQueryParamsDto) => {
   return {
@@ -28,7 +30,10 @@ const filter = ({ searchEmailTerm, searchLoginTerm }: UsersPaginationQueryParams
 
 @Injectable()
 export class UsersQueryRepo {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    @InjectDataSource() private dataSource: DataSource
+  ) {}
 
   getTotalCount = async (queryParams: UsersPaginationQueryParamsDto) => {
     return this.userModel.countDocuments(filter(queryParams));

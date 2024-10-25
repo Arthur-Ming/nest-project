@@ -1,8 +1,8 @@
 import { IsUserExist } from '../../../decorators/validate/is-user-exist';
-import { IsValidDbId } from '../../../../../common/decorators/validate/is-valid-db-id';
+import { IsUUID } from 'class-validator';
 
 export class UserByIdDto {
   @IsUserExist()
-  @IsValidDbId()
+  @IsUUID()
   id: string;
 }

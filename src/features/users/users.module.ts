@@ -10,6 +10,8 @@ import { IsUserExistConstraint } from './decorators/validate/is-user-exist';
 import { appSettings, AppSettings } from '../../settings/app-settings';
 import { IsUserExistByLoginConstraint } from './decorators/validate/is-user-exist-by-login';
 import { IsUserExistByEmailConstraint } from './decorators/validate/is-user-exist-by-email';
+import { UsersQueryRepoPg } from './infrastructure/users.query-repo.pg';
+import { UsersRepoPg } from './infrastructure/users.repo.pg';
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])],
@@ -18,6 +20,8 @@ import { IsUserExistByEmailConstraint } from './decorators/validate/is-user-exis
     UsersService,
     UsersRepo,
     UsersQueryRepo,
+    UsersQueryRepoPg,
+    UsersRepoPg,
     CryptoService,
     IsUserExistConstraint,
     IsUserExistByLoginConstraint,

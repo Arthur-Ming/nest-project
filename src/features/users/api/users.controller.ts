@@ -11,12 +11,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from '../application/users.service';
-import { UsersQueryRepo } from '../infrastructure/users.query-repo';
 import { CreateUserDto } from './dto/input/create-user.dto';
 import { UsersPaginationQueryParamsDto } from './dto/input/users-pagination-query-params.dto';
 import { UserByIdDto } from './dto/input/user-by-id.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 import { BasicAuthGuard } from '../../auth/guards/basic-auth.guard';
+import { UsersQueryRepoPg } from '../infrastructure/users.query-repo.pg';
 
 @SkipThrottle()
 @UseGuards(BasicAuthGuard)
@@ -24,7 +24,7 @@ import { BasicAuthGuard } from '../../auth/guards/basic-auth.guard';
 export class UsersController {
   constructor(
     private usersService: UsersService,
-    private usersQueryRepo: UsersQueryRepo
+    private usersQueryRepoPg: UsersQueryRepoPg
   ) {}
   @Get()
   @HttpCode(HttpStatus.OK)
@@ -32,13 +32,13 @@ export class UsersController {
     @Query()
     queryParams: UsersPaginationQueryParamsDto
   ) {
-    return this.usersQueryRepo.findAll(queryParams);
+    return this.usersQueryRepoPg.findAll(queryParams);
   }
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async addUser(@Body() addUserModel: CreateUserDto) {
     const addedUserId = await this.usersService.addUser(addUserModel);
-    return await this.usersQueryRepo.findById(addedUserId);
+    return await this.usersQueryRepoPg.findById(addedUserId);
   }
 
   @Delete(':id')
