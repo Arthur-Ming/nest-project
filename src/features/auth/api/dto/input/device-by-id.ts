@@ -1,6 +1,6 @@
-import { IsValidDbId } from '../../../../../common/decorators/validate/is-valid-db-id';
+import { IsUUID } from 'class-validator';
 
 export class DeviceById {
-  @IsValidDbId()
+  @IsUUID()
   id: string;
 }

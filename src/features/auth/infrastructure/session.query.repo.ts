@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Session } from '../domain/session.entity';
 import { Model } from 'mongoose';
-import { ObjectId, WithId } from 'mongodb';
+import { WithId } from 'mongodb';
 
 @Injectable()
 export class SessionQueryRepo {
@@ -16,15 +16,15 @@ export class SessionQueryRepo {
   };
   constructor(@InjectModel(Session.name) private sessionModel: Model<Session>) {}
 
-  async getById(id: string) {
-    return this.sessionModel.findById(new ObjectId(id));
-  }
-
-  async getAllUserSessions(deviceId: string) {
-    const session = await this.sessionModel.findById(new ObjectId(deviceId));
-    if (!session) return null;
-
-    const allUserSessions = await this.sessionModel.find({ userId: session.userId });
-    return allUserSessions.map((i) => this.mapToOutput(i));
-  }
+  // async getById(id: string) {
+  //   return this.sessionModel.findById(new ObjectId(id));
+  // }
+  //
+  // async getAllUserSessions(deviceId: string) {
+  //   const session = await this.sessionModel.findById(new ObjectId(deviceId));
+  //   if (!session) return null;
+  //
+  //   const allUserSessions = await this.sessionModel.find({ userId: session.userId });
+  //   return allUserSessions.map((i) => this.mapToOutput(i));
+  // }
 }

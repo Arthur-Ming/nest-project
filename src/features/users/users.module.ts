@@ -35,6 +35,8 @@ import { UsersRepoPg } from './infrastructure/users.repo.pg';
     UsersService,
     UsersRepo,
     UsersQueryRepo,
+    UsersQueryRepoPg,
+    UsersRepoPg,
     IsUserExistConstraint,
     IsUserExistByLoginConstraint,
     IsUserExistByEmailConstraint,

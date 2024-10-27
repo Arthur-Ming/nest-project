@@ -20,7 +20,7 @@ import { UsersQueryRepoPg } from '../infrastructure/users.query-repo.pg';
 
 @SkipThrottle()
 @UseGuards(BasicAuthGuard)
-@Controller('users')
+@Controller('sa/users')
 export class UsersController {
   constructor(
     private usersService: UsersService,

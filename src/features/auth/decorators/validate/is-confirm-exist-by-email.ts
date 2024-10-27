@@ -5,26 +5,30 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { EmailConfirmationRepo } from '../../infrastructure/email-confirmation.repo';
-import { UsersRepo } from '../../../users/infrastructure/users.repo';
+import { UsersRepoPg } from '../../../users/infrastructure/users.repo.pg';
+import { EmailConfirmationRepoPg } from '../../infrastructure/email-confirmation.repo.pg';
 
 @ValidatorConstraint({ name: 'IsConfirmExistByEmailConstraint', async: true })
 @Injectable()
 export class IsConfirmExistByEmailConstraint implements ValidatorConstraintInterface {
   constructor(
-    private readonly usersRepo: UsersRepo,
-    private readonly emailConfirmationRepo: EmailConfirmationRepo
+    private readonly usersRepo: UsersRepoPg,
+    private readonly emailConfirmationRepo: EmailConfirmationRepoPg
   ) {}
   async validate(email: string) {
-    const user = await this.usersRepo.findByLoginOrEmail(email);
+    const user = await this.usersRepo.findByEmail(email);
+
     if (!user) {
       return false;
     }
-    const confirm = await this.emailConfirmationRepo.findByUserId(user._id.toString());
-
+    const confirm = await this.emailConfirmationRepo.findByUserId(user.id.toString());
+    console.log('confirm');
+    console.log(confirm);
+    console.log(confirm.isConfirmed);
     if (!confirm || confirm.isConfirmed) {
       return false;
     }
+
     return true;
   }
 }

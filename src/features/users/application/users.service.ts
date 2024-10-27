@@ -23,7 +23,7 @@ export class UsersService {
   }
   async updatePassword(userId: string, newPassword: string) {
     const hash = await this.cryptoService.hash(newPassword);
-    return this.usersRepo.updatePassword(userId, hash);
+    return this.usersRepoPg.updatePassword(userId, hash);
   }
 
   async deleteUser(userId: string) {

@@ -25,6 +25,10 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { SecurityDevicesController } from './api/security-devices.controller';
 import { SessionQueryRepo } from './infrastructure/session.query.repo';
 import { SecurityDevicesService } from './application/security-devices.service';
+import { EmailConfirmationRepoPg } from './infrastructure/email-confirmation.repo.pg';
+import { CodeRecoveryRepoPg } from './infrastructure/code-recovery.repo.pg';
+import { SessionRepoPg } from './infrastructure/session.repo.pg';
+import { SessionQueryRepoPg } from './infrastructure/session.query.repo.pg';
 
 @Module({
   imports: [
@@ -43,9 +47,13 @@ import { SecurityDevicesService } from './application/security-devices.service';
     CryptoService,
     SecurityDevicesService,
     EmailConfirmationRepo,
+    EmailConfirmationRepoPg,
     CodeRecoveryRepo,
+    CodeRecoveryRepoPg,
     SessionRepo,
+    SessionRepoPg,
     SessionQueryRepo,
+    SessionQueryRepoPg,
     ConfirmCodeValidateConstraint,
     IsConfirmExistByEmailConstraint,
     {

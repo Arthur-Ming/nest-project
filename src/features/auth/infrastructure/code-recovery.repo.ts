@@ -7,12 +7,12 @@ import { CodeRecovery } from '../domain/code-recovery.entity';
 export class CodeRecoveryRepo {
   constructor(@InjectModel(CodeRecovery.name) private codeRecoveryModel: Model<CodeRecovery>) {}
 
-  async add(dto: CodeRecovery) {
-    const newCodeRecovery = await this.codeRecoveryModel.create(dto);
-    return newCodeRecovery._id.toString();
-  }
-  async findById(id: string) {
-    const codeRecovery = await this.codeRecoveryModel.findById(id);
-    return codeRecovery ? codeRecovery : null;
-  }
+  // async add(dto: CodeRecovery) {
+  //   const newCodeRecovery = await this.codeRecoveryModel.create(dto);
+  //   return newCodeRecovery._id.toString();
+  // }
+  // async findById(id: string) {
+  //   const codeRecovery = await this.codeRecoveryModel.findById(id);
+  //   return codeRecovery ? codeRecovery : null;
+  // }
 }

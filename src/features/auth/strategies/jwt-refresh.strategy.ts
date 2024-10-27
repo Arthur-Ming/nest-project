@@ -3,13 +3,13 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { AppSettings } from '../../../settings/app-settings';
 import { Request as RequestType } from 'express';
-import { SessionRepo } from '../infrastructure/session.repo';
+import { SessionRepoPg } from '../infrastructure/session.repo.pg';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor(
     private appSettings: AppSettings,
-    private readonly sessionRepo: SessionRepo
+    private readonly sessionRepo: SessionRepoPg
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([JwtRefreshStrategy.extractJWT]),
@@ -21,16 +21,18 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
     if (req.cookies && 'refreshToken' in req.cookies && req.cookies.refreshToken.length > 0) {
       return req.cookies.refreshToken;
     }
+
     return null;
   }
 
   async validate(payload: any) {
     const session = await this.sessionRepo.findById(payload.deviceId);
-
+    console.log('validate');
+    console.log(session);
     if (!session) {
       throw new UnauthorizedException();
     }
-    if (session.exp !== payload.exp) {
+    if (Number(session.exp) !== Number(payload.exp)) {
       throw new UnauthorizedException();
     }
     return { deviceId: payload.deviceId };

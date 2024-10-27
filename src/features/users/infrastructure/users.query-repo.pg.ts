@@ -11,17 +11,19 @@ export class UsersQueryRepoPg {
   getTotalCount = async (queryParams: UsersPaginationQueryParamsDto) => {
     const [{ count: totalCount }] = await this.dataSource.query(`
     SELECT COUNT(*) FROM "Users"
-        WHERE "Users".email LIKE '%${queryParams.searchEmailTerm}%' OR "Users".login LIKE '%${queryParams.searchLoginTerm}%'`);
+        WHERE "Users".email ILIKE '%${queryParams.searchEmailTerm}%' OR "Users".login ILIKE '%${queryParams.searchLoginTerm}%'`);
     return Number(totalCount);
   };
 
   async findAll(queryParams: UsersPaginationQueryParamsDto) {
     const offSet = (queryParams.pageNumber - 1) * queryParams.pageSize;
     const limit = queryParams.pageSize;
+    const d =
+      queryParams.sortBy === 'createdAt' ? `"createdAt"` : `"${queryParams.sortBy}" COLLATE "C"`;
     const users = await this.dataSource.query(`
     SELECT * FROM "Users"
-          WHERE "Users".email LIKE '%${queryParams.searchEmailTerm}%' OR "Users".login LIKE '%${queryParams.searchLoginTerm}%'
-          ORDER BY "${queryParams.sortBy}" ${queryParams.sortDirection}
+          WHERE "Users".email ILIKE '%${queryParams.searchEmailTerm}%' OR "Users".login ILIKE '%${queryParams.searchLoginTerm}%'
+          ORDER BY ${d} ${queryParams.sortDirection}
           OFFSET ${offSet}
           LIMIT ${limit}
           `);

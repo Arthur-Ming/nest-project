@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '../domain/users.entity';
+import { User } from '../domain/users.entity.pg';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
@@ -43,29 +43,38 @@ export class UsersRepoPg {
     `);
     return exists;
   }
-  // async findByLoginOrEmail(loginOrEmail: string) {
-  //   const user = await this.userModel.findOne({
-  //     $or: [{ email: loginOrEmail }, { login: loginOrEmail }],
-  //   });
-  //   if (!user) return null;
-  //   return user;
-  // }
-  //
-  // async findById(userId: string) {
-  //   const user = await this.userModel.findById(userId);
-  //   if (!user) return null;
-  //   return user;
-  // }
-  //
-  // async updatePassword(userId: string, newPasswordHash: string) {
-  //   const updateResult = await this.userModel.updateOne(
-  //     { _id: new ObjectId(userId) },
-  //     {
-  //       $set: {
-  //         password: newPasswordHash,
-  //       },
-  //     }
-  //   );
-  //   return updateResult.matchedCount === 1;
-  // }
+  async findByLoginOrEmail(loginOrEmail: string) {
+    const [user = null] = await this.dataSource.query(`
+       SELECT * FROM "Users" 
+       WHERE email='${loginOrEmail}' OR login='${loginOrEmail}'
+    `);
+    return user;
+  }
+
+  async findByEmail(email: string) {
+    const [user = null] = await this.dataSource.query(`
+       SELECT * FROM "Users" 
+       WHERE email='${email}'
+    `);
+    return user;
+  }
+
+  async findById(userId: string) {
+    const [user = null] = await this.dataSource.query(`
+       SELECT * FROM "Users" 
+       WHERE id='${userId}'
+    `);
+    return user;
+  }
+
+  async updatePassword(userId: string, newPasswordHash: string) {
+    const [, matchedCount] = await this.dataSource.query(
+      `UPDATE "Users" 
+             SET "password" = '${newPasswordHash}'
+       WHERE id = '${userId}'     
+             `
+    );
+
+    return matchedCount === 1;
+  }
 }

@@ -5,19 +5,19 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { EmailConfirmationRepo } from '../../infrastructure/email-confirmation.repo';
+import { EmailConfirmationRepoPg } from '../../infrastructure/email-confirmation.repo.pg';
 
 @ValidatorConstraint({ name: 'ConfirmCodeValidateConstraint', async: true })
 @Injectable()
 export class ConfirmCodeValidateConstraint implements ValidatorConstraintInterface {
-  constructor(private readonly emailConfirmationRepo: EmailConfirmationRepo) {}
+  constructor(private readonly emailConfirmationRepo: EmailConfirmationRepoPg) {}
   async validate(code: string) {
     const confirmation = await this.emailConfirmationRepo.findByConfirmationCode(code);
 
     if (
       !confirmation ||
       confirmation.isConfirmed ||
-      confirmation.expirationDate < Number(new Date())
+      Number(confirmation.exp) < Number(new Date())
     ) {
       return false;
     }

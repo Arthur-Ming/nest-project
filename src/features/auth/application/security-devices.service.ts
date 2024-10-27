@@ -1,23 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { SessionRepo } from '../infrastructure/session.repo';
 import { InterlayerNotice } from '../../../base/result/result';
 import { ResultStatusEnum } from '../../../base/result/result-status.enum';
+import { SessionRepoPg } from '../infrastructure/session.repo.pg';
 
 @Injectable()
 export class SecurityDevicesService {
-  constructor(private readonly sessionRepo: SessionRepo) {}
+  constructor(private readonly sessionRepoPg: SessionRepoPg) {}
 
   async removeExcludeCurrent(currentDeviceId: string) {
-    return this.sessionRepo.removeExcludeCurrent(currentDeviceId);
+    return this.sessionRepoPg.removeExcludeCurrent(currentDeviceId);
   }
 
   async removeById(deviceIdFromParams: string, deviceIdFromCookie: string) {
-    const session = await this.sessionRepo.findById(deviceIdFromCookie);
+    const session = await this.sessionRepoPg.findById(deviceIdFromCookie);
     if (!session) {
       return new InterlayerNotice(ResultStatusEnum.NotFound);
     }
 
-    const sessionByParamsId = await this.sessionRepo.findById(deviceIdFromParams);
+    const sessionByParamsId = await this.sessionRepoPg.findById(deviceIdFromParams);
     if (!sessionByParamsId) {
       return new InterlayerNotice(ResultStatusEnum.NotFound);
     }
@@ -27,7 +27,7 @@ export class SecurityDevicesService {
       return new InterlayerNotice(ResultStatusEnum.Forbidden);
     }
 
-    await this.sessionRepo.remove(deviceIdFromParams);
+    await this.sessionRepoPg.remove(deviceIdFromParams);
     return new InterlayerNotice(ResultStatusEnum.Success);
   }
 }
