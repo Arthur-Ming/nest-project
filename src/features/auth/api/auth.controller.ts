@@ -34,40 +34,6 @@ import { CurrentDeviceId } from '../decorators/current-device-id';
 @Controller(AuthRoutes.base)
 export class AuthController {
   constructor(private authService: AuthService) {}
-  //@SkipThrottle({ default: false })
-  @Post(AuthRoutes.registration)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async registration(@Body() dto: CreateUserDto) {
-    await this.authService.registration(dto);
-  }
-  //@SkipThrottle({ default: false })
-  @Post(AuthRoutes.passwordRecovery)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async passwordRecovery(@Body() dto: PasswordRecoveryDto) {
-    const result = await this.authService.passwordRecovery(dto.email);
-    if (result.status === ResultStatusEnum.NotFound) {
-      throw new BadRequestException();
-    }
-  }
-
-  // @SkipThrottle({ default: false })
-  @Post(AuthRoutes.newPassword)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async newPassword(@Body() dto: NewPasswordDto) {
-    await this.authService.newPassword(dto);
-  }
-  // @SkipThrottle({ default: false })
-  @Post(AuthRoutes.registrationConfirmation)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async registrationConfirmation(@Body() dto: ConfirmDto) {
-    await this.authService.registrationConfirmation(dto.code);
-  }
-  // @SkipThrottle({ default: false })
-  @Post(AuthRoutes.registrationEmailResending)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async registrationEmailResending(@Body() dto: RegistrationEmailResendingDto) {
-    await this.authService.registrationEmailResending(dto.email);
-  }
 
   // @SkipThrottle({ default: false })
   @UseGuards(LocalAuthGuard)
@@ -95,11 +61,20 @@ export class AuthController {
     }
   }
 
-  @UseGuards(JwtRefreshTokenGuard)
-  @Post(AuthRoutes.logout)
+  //@SkipThrottle({ default: false })
+  @Post(AuthRoutes.passwordRecovery)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async logout(@CurrentDeviceId() deviceId) {
-    await this.authService.logout(deviceId);
+  async passwordRecovery(@Body() dto: PasswordRecoveryDto) {
+    const result = await this.authService.passwordRecovery(dto.email);
+    if (result.status === ResultStatusEnum.NotFound) {
+      throw new BadRequestException();
+    }
+  }
+  // @SkipThrottle({ default: false })
+  @Post(AuthRoutes.newPassword)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async newPassword(@Body() dto: NewPasswordDto) {
+    await this.authService.newPassword(dto);
   }
 
   @UseGuards(JwtRefreshTokenGuard)
@@ -117,6 +92,35 @@ export class AuthController {
       return { accessToken };
     }
   }
+
+  // @SkipThrottle({ default: false })
+  @Post(AuthRoutes.registrationConfirmation)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async registrationConfirmation(@Body() dto: ConfirmDto) {
+    await this.authService.registrationConfirmation(dto.code);
+  }
+
+  //@SkipThrottle({ default: false })
+  @Post(AuthRoutes.registration)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async registration(@Body() dto: CreateUserDto) {
+    await this.authService.registration(dto);
+  }
+
+  // @SkipThrottle({ default: false })
+  @Post(AuthRoutes.registrationEmailResending)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async registrationEmailResending(@Body() dto: RegistrationEmailResendingDto) {
+    await this.authService.registrationEmailResending(dto.email);
+  }
+
+  @UseGuards(JwtRefreshTokenGuard)
+  @Post(AuthRoutes.logout)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async logout(@CurrentDeviceId() deviceId) {
+    await this.authService.logout(deviceId);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get(AuthRoutes.me)
   @HttpCode(HttpStatus.OK)

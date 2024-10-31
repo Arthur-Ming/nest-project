@@ -11,7 +11,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { PostsService } from '../application/posts.service';
-import { CreatePostDto } from './dto/input/create-post.dto';
 import { PostByIdDto } from './dto/input/post-by-id.dto';
 import { PostsPaginationQueryParamsDto } from './dto/input/posts-pagination-query-params.dto';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -24,7 +23,6 @@ import { CommentsPaginationQueryParamsDto } from '../../comments/api/dto/input/c
 import { CreateCommentDto } from '../../comments/api/dto/input/create-comment.dto';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 import { CurrentUserId } from '../../../auth/decorators/current-user';
-import { BasicAuthGuard } from '../../../auth/guards/basic-auth.guard';
 import { PostsQueryRepo } from '../infrastructure/posts.query-repo';
 
 @SkipThrottle()
@@ -64,17 +62,7 @@ export class PostsController {
     const userId = payload ? payload.userId : null;
     return await this.commentsQueryRepo.findAll(queryParams, params.id, userId);
   }
-  @UseGuards(BasicAuthGuard)
-  @Post()
-  @HttpCode(HttpStatus.CREATED)
-  async createPost(
-    @Body() createPostDto: CreatePostDto,
-    @ExtractAccessToken(DecodeJwtTokenPipe) payload: AccessTokenPayloadDto
-  ) {
-    const userId = payload ? payload.userId : null;
-    const { id } = await this.postsService.addPost(createPostDto);
-    return await this.postsQueryRepo.findById(id, userId);
-  }
+
   @UseGuards(JwtAuthGuard)
   @Post(':id/comments')
   @HttpCode(HttpStatus.CREATED)
