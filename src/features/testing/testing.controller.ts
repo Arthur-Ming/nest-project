@@ -8,11 +8,11 @@ export class TestingController {
   @Delete('all-data')
   @HttpCode(204)
   async deleteAllData() {
-    const [, deleteResult] = await this.dataSource.query(`
-   DELETE FROM "Users";
-   
-     `);
-
-    return deleteResult === 1;
+    await this.dataSource.query(`
+   DELETE FROM "Users"
+           `);
+    await this.dataSource.query(`
+   DELETE FROM "Blogs"
+          `);
   }
 }

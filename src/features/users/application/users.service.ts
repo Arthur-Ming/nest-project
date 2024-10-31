@@ -2,19 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { UsersRepo } from '../infrastructure/users.repo';
 import { CryptoService } from '../../../services/crypto/crypto.service';
 import { CreateUserDto } from '../api/dto/input/create-user.dto';
-import { UsersRepoPg } from '../infrastructure/users.repo.pg';
 
 @Injectable()
 export class UsersService {
   constructor(
     private usersRepo: UsersRepo,
-    private usersRepoPg: UsersRepoPg,
     private cryptoService: CryptoService
   ) {}
 
   async addUser(addUserModel: CreateUserDto) {
     const hash = await this.cryptoService.hash(addUserModel.password);
-    return await this.usersRepoPg.add({
+    return await this.usersRepo.add({
       password: hash,
       login: addUserModel.login,
       email: addUserModel.email,
@@ -23,10 +21,21 @@ export class UsersService {
   }
   async updatePassword(userId: string, newPassword: string) {
     const hash = await this.cryptoService.hash(newPassword);
-    return this.usersRepoPg.updatePassword(userId, hash);
+    return this.usersRepo.updatePassword(userId, hash);
+  }
+
+  async findById(userId: string) {
+    return this.usersRepo.findById(userId);
+  }
+  async findByLoginOrEmail(loginOrEmail: string) {
+    return this.usersRepo.findByLoginOrEmail(loginOrEmail);
+  }
+
+  async findByEmail(email: string) {
+    return this.usersRepo.findByEmail(email);
   }
 
   async deleteUser(userId: string) {
-    await this.usersRepoPg.remove(userId);
+    await this.usersRepo.remove(userId);
   }
 }

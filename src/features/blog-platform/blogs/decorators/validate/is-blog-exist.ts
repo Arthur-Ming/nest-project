@@ -12,6 +12,8 @@ import { BlogsRepo } from '../../infrastructure/blogs.repo';
 export class IsBlogExistConstraint implements ValidatorConstraintInterface {
   constructor(private readonly blogsRepo: BlogsRepo) {}
   async validate(id: string) {
+    console.log('validate');
+    console.log(id);
     const isExists = await this.blogsRepo.existsById(id);
 
     if (!isExists) {

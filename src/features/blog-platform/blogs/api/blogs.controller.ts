@@ -12,47 +12,54 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { BlogsService } from '../application/blogs.service';
-import { BlogsQueryRepo } from '../infrastructure/blogs.query-repo';
 import { CreateBlogDto } from './dto/input/create-blog.dto';
-import { BlogsRepo } from '../infrastructure/blogs.repo';
 import { UpdateBlogDto } from './dto/input/update-blog.dto';
 import { BlogByIdDto } from './dto/input/blog-by-id.dto';
 import { BlogsPaginationQueryParamsDto } from './dto/input/blogs-pagination-query-params.dto';
-import { BlogsRoutes } from '../routes/blogs-routes';
 import { SkipThrottle } from '@nestjs/throttler';
 import { ExtractAccessToken } from '../../../auth/decorators/extract-access-token';
 import { DecodeJwtTokenPipe } from '../../../auth/pipes/decode-jwt-token.pipe';
 import { AccessTokenPayloadDto } from '../../../auth/api/dto/output/access-token-payload.dto';
-
 import { ResultStatusEnum } from '../../../../base/result/result-status.enum';
 import { PostsQueryRepo } from '../../posts/infrastructure/posts.query-repo';
 import { CreatePostForSpecifiedBlogDto } from '../../posts/api/dto/input/create-post-for-specified-blog.dto';
 import { BasicAuthGuard } from '../../../auth/guards/basic-auth.guard';
+import { BlogsQueryRepo } from '../infrastructure/blogs.query-repo';
+import { UpdatePostDto } from '../../posts/api/dto/input/update-post.dto';
+import { PostForBlogByIdDto } from './dto/input/post-for-blog-by-id.dto';
 
 @SkipThrottle()
-@Controller(BlogsRoutes.base)
+@Controller()
 export class BlogsController {
   constructor(
     private blogsService: BlogsService,
-    private blogsRepo: BlogsRepo,
-    private blogsQueryRepo: BlogsQueryRepo,
-    private postsQueryRepo: PostsQueryRepo
+    private blogsQueryRepoPg: BlogsQueryRepo,
+    private postsQueryRepo: PostsQueryRepo,
+    private postsQueryRepoPg: PostsQueryRepo
   ) {}
-  @Get()
+  @Get('blogs')
   getBlogs(
     @Query()
     queryParams: BlogsPaginationQueryParamsDto
   ) {
-    return this.blogsQueryRepo.findByQueryParams(queryParams);
+    return this.blogsQueryRepoPg.findByQueryParams(queryParams);
+  }
+  @UseGuards(BasicAuthGuard)
+  @Get('sa/blogs')
+  getBlogsSA(
+    @Query()
+    queryParams: BlogsPaginationQueryParamsDto
+  ) {
+    return this.blogsQueryRepoPg.findByQueryParams(queryParams);
   }
 
-  @Get(BlogsRoutes.byId)
+  @Get('blogs/:blogId')
   @HttpCode(HttpStatus.OK)
   async getBlogById(@Param() params: BlogByIdDto) {
-    return await this.blogsQueryRepo.findById(params.id);
+    return await this.blogsQueryRepoPg.findById(params.blogId);
   }
 
-  @Get(BlogsRoutes.postsForSpecificBlog)
+  @Get('blogs/:blogId/posts')
   @HttpCode(HttpStatus.OK)
   async getPostsForSpecificBlog(
     @Param() params: BlogByIdDto,
@@ -61,20 +68,32 @@ export class BlogsController {
     @ExtractAccessToken(DecodeJwtTokenPipe) payload: AccessTokenPayloadDto | null
   ) {
     const userId = payload ? payload.userId : null;
-    return await this.postsQueryRepo.findAll(queryParams, userId, params.id);
+    return await this.postsQueryRepoPg.findAll(queryParams, userId, params.blogId);
   }
   @UseGuards(BasicAuthGuard)
-  @Post()
+  @Get('sa/blogs/:blogId/posts')
+  @HttpCode(HttpStatus.OK)
+  async getPostsForSpecificBlogSA(
+    @Param() params: BlogByIdDto,
+    @Query()
+    queryParams: BlogsPaginationQueryParamsDto,
+    @ExtractAccessToken(DecodeJwtTokenPipe) payload: AccessTokenPayloadDto | null
+  ) {
+    const userId = payload ? payload.userId : null;
+    return await this.postsQueryRepoPg.findAll(queryParams, userId, params.blogId);
+  }
+  @UseGuards(BasicAuthGuard)
+  @Post('sa/blogs')
   @HttpCode(HttpStatus.CREATED)
   async createBlog(@Body() createBlogDto: CreateBlogDto) {
     const result = await this.blogsService.addBlog(createBlogDto);
     if (result.status === ResultStatusEnum.Success) {
-      return await this.blogsQueryRepo.findById(result.getData().newBlogId);
+      return await this.blogsQueryRepoPg.findById(result.getData().newBlogId);
     }
   }
 
   @UseGuards(BasicAuthGuard)
-  @Post(BlogsRoutes.postsForSpecificBlog)
+  @Post('sa/blogs/:blogId/posts')
   @HttpCode(HttpStatus.CREATED)
   async addPostForSpecificBlog(
     @Param() params: BlogByIdDto,
@@ -82,22 +101,38 @@ export class BlogsController {
     @ExtractAccessToken(DecodeJwtTokenPipe) payload: AccessTokenPayloadDto
   ) {
     const addedPostId = await this.blogsService.addPostSpecificBlog(
-      params.id,
+      params.blogId,
       createPostForSpecifiedBlogDto
     );
     const userId = payload ? payload.userId : null;
-    return this.postsQueryRepo.findById(addedPostId, userId);
+    return this.postsQueryRepoPg.findById(addedPostId, userId);
   }
   @UseGuards(BasicAuthGuard)
-  @Put(BlogsRoutes.byId)
+  @Put('sa/blogs/:blogId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateBlog(@Param() params: BlogByIdDto, @Body() updateBlogDto: UpdateBlogDto) {
-    await this.blogsService.updateBlog(params.id, updateBlogDto);
+    console.log('updateBlog');
+    await this.blogsService.updateBlog(params.blogId, updateBlogDto);
   }
+
   @UseGuards(BasicAuthGuard)
-  @Delete(BlogsRoutes.byId)
+  @Put('sa/blogs/:blogId/posts/:postId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updatePost(@Param() params: PostForBlogByIdDto, @Body() updatePostDto: UpdatePostDto) {
+    await this.blogsService.updatePost(params.blogId, params.postId, updatePostDto);
+  }
+
+  @UseGuards(BasicAuthGuard)
+  @Delete('sa/blogs/:blogId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlog(@Param() params: BlogByIdDto) {
-    await this.blogsService.deleteBlog(params.id);
+    await this.blogsService.deleteBlog(params.blogId);
+  }
+
+  @UseGuards(BasicAuthGuard)
+  @Delete('sa/blogs/:blogId/posts/:postId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deletePost(@Param() params: PostForBlogByIdDto) {
+    await this.blogsService.deletePost(params.blogId, params.postId);
   }
 }

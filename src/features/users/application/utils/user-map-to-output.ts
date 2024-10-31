@@ -1,7 +1,6 @@
 import { UsersOutputModel } from '../../api/dto/output/users.output.model';
-import { UserDocument } from '../../domain/users.entity';
 
-export function userMapToOutput(dbUser: UserDocument): UsersOutputModel {
+export function userMapToOutput(dbUser: any): UsersOutputModel {
   return {
     id: dbUser.id.toString(),
     login: dbUser.login,

@@ -1,16 +1,7 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
-import { ObjectId } from 'mongodb';
+import { Entity } from 'typeorm';
 
-export type CodeRecoveryDocument = HydratedDocument<CodeRecovery>;
-
-@Schema()
-export class CodeRecovery {
-  @Prop()
-  userId: ObjectId;
-
-  @Prop()
-  createdAt: number;
+@Entity()
+export class CodeRecoveryEntity {
+  userId: string;
+  createdAt?: Date;
 }
-
-export const CodeRecoverySchema = SchemaFactory.createForClass(CodeRecovery);

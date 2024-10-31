@@ -1,18 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { CodeRecovery } from '../domain/code-recovery.entity';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { CodeRecoveryEntity } from '../domain/code-recovery.entity';
 
 @Injectable()
 export class CodeRecoveryRepo {
-  constructor(@InjectModel(CodeRecovery.name) private codeRecoveryModel: Model<CodeRecovery>) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  // async add(dto: CodeRecovery) {
-  //   const newCodeRecovery = await this.codeRecoveryModel.create(dto);
-  //   return newCodeRecovery._id.toString();
-  // }
-  // async findById(id: string) {
-  //   const codeRecovery = await this.codeRecoveryModel.findById(id);
-  //   return codeRecovery ? codeRecovery : null;
-  // }
+  async add(dto: CodeRecoveryEntity) {
+    const [{ id }] = await this.dataSource.query(`
+    INSERT INTO "CodeRecovery" ("userId") 
+    VALUES ('${dto.userId}')
+    RETURNING id
+    `);
+
+    return id;
+  }
+  async findById(id: string) {
+    const [result = null] = await this.dataSource.query(
+      `SELECT * FROM "CodeRecovery" as e
+     WHERE e.id='${id}'`
+    );
+    if (!result) return null;
+    return result;
+  }
 }

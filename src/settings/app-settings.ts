@@ -47,8 +47,8 @@ class APISettings {
   public readonly RATE_LIMITING_TTL = 10000;
   public readonly RATE_LIMITING_LIMIT = 5;
   public readonly JWT_SECRET: string;
-  public readonly ACCESS_TOKEN_EXPIRES_IN = '10s';
-  public readonly REFRESH_TOKEN_EXPIRES_IN = '20s';
+  public readonly ACCESS_TOKEN_EXPIRES_IN = '10h';
+  public readonly REFRESH_TOKEN_EXPIRES_IN = '20h';
   public readonly EMAIL: string;
   public readonly EMAIL_PASSWORD: string;
   public readonly COOKIE_SECURE: false;

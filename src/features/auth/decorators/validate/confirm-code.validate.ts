@@ -5,12 +5,12 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { EmailConfirmationRepoPg } from '../../infrastructure/email-confirmation.repo.pg';
+import { EmailConfirmationRepo } from '../../infrastructure/email-confirmation.repo';
 
 @ValidatorConstraint({ name: 'ConfirmCodeValidateConstraint', async: true })
 @Injectable()
 export class ConfirmCodeValidateConstraint implements ValidatorConstraintInterface {
-  constructor(private readonly emailConfirmationRepo: EmailConfirmationRepoPg) {}
+  constructor(private readonly emailConfirmationRepo: EmailConfirmationRepo) {}
   async validate(code: string) {
     const confirmation = await this.emailConfirmationRepo.findByConfirmationCode(code);
 

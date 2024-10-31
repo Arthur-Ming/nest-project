@@ -3,13 +3,13 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { AppSettings } from '../../../settings/app-settings';
 import { Request as RequestType } from 'express';
-import { SessionRepoPg } from '../infrastructure/session.repo.pg';
+import { SessionRepo } from '../infrastructure/session.repo';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor(
     private appSettings: AppSettings,
-    private readonly sessionRepo: SessionRepoPg
+    private readonly sessionRepo: SessionRepo
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([JwtRefreshStrategy.extractJWT]),

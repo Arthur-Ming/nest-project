@@ -16,7 +16,7 @@ import { UsersPaginationQueryParamsDto } from './dto/input/users-pagination-quer
 import { UserByIdDto } from './dto/input/user-by-id.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 import { BasicAuthGuard } from '../../auth/guards/basic-auth.guard';
-import { UsersQueryRepoPg } from '../infrastructure/users.query-repo.pg';
+import { UsersQueryRepo } from '../infrastructure/users.query-repo';
 
 @SkipThrottle()
 @UseGuards(BasicAuthGuard)
@@ -24,7 +24,7 @@ import { UsersQueryRepoPg } from '../infrastructure/users.query-repo.pg';
 export class UsersController {
   constructor(
     private usersService: UsersService,
-    private usersQueryRepoPg: UsersQueryRepoPg
+    private usersQueryRepoPg: UsersQueryRepo
   ) {}
   @Get()
   @HttpCode(HttpStatus.OK)

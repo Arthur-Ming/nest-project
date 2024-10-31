@@ -1,24 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { BlogsRepo } from '../infrastructure/blogs.repo';
 import { CreateBlogDto } from '../api/dto/input/create-blog.dto';
 import { InterlayerNotice } from '../../../../base/result/result';
 import { ResultStatusEnum } from '../../../../base/result/result-status.enum';
 import { UpdateBlogDto } from '../api/dto/input/update-blog.dto';
 import { PostsService } from '../../posts/application/posts.service';
 import { CreatePostForSpecifiedBlogDto } from '../../posts/api/dto/input/create-post-for-specified-blog.dto';
+import { BlogsRepo } from '../infrastructure/blogs.repo';
+import { UpdatePostDto } from '../../posts/api/dto/input/update-post.dto';
+import { PostsRepo } from '../../posts/infrastructure/posts.repo';
 
 @Injectable()
 export class BlogsService {
   constructor(
-    private blogsRepo: BlogsRepo,
+    private blogsRepoPg: BlogsRepo,
+    private readonly postsRepoPg: PostsRepo,
     private postsService: PostsService
   ) {}
   async addBlog(input: CreateBlogDto): Promise<InterlayerNotice<{ newBlogId: string }>> {
-    const newBlogId = await this.blogsRepo.add({
+    const newBlogId = await this.blogsRepoPg.add({
       name: input.name,
       websiteUrl: input.websiteUrl,
       description: input.description,
-      createdAt: Number(new Date()),
       isMembership: false,
     });
     return new InterlayerNotice(ResultStatusEnum.Success, { newBlogId });
@@ -32,10 +34,18 @@ export class BlogsService {
     return id;
   }
   async updateBlog(blogId: string, updateBlogDTO: UpdateBlogDto) {
-    await this.blogsRepo.update(blogId, updateBlogDTO);
+    await this.blogsRepoPg.update(blogId, updateBlogDTO);
+  }
+
+  async updatePost(blogId: string, postId: string, updatePostDTO: UpdatePostDto) {
+    await this.postsRepoPg.update(blogId, postId, updatePostDTO);
+  }
+
+  async deletePost(blogId: string, postId: string) {
+    await this.postsRepoPg.remove(blogId, postId);
   }
 
   async deleteBlog(blogId: string) {
-    await this.blogsRepo.remove(blogId);
+    await this.blogsRepoPg.remove(blogId);
   }
 }

@@ -1,8 +1,8 @@
 import { IsPostExist } from '../../../decorators/validate/is-post-exist';
-import { IsValidDbId } from '../../../../../../common/decorators/validate/is-valid-db-id';
+import { IsUUID } from 'class-validator';
 
 export class PostByIdDto {
   @IsPostExist()
-  @IsValidDbId()
+  @IsUUID()
   id: string;
 }

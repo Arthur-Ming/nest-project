@@ -1,25 +1,14 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
-import { ObjectId } from 'mongodb';
+import { Entity } from 'typeorm';
 
-export type SessionDocument = HydratedDocument<Session>;
-
-@Schema()
-export class Session {
-  @Prop()
+@Entity()
+export class SessionEntity {
   iat: number;
 
-  @Prop()
   exp: number;
 
-  @Prop()
   ip: string;
 
-  @Prop()
   deviceName: string;
 
-  @Prop()
-  userId: ObjectId;
+  userId: string;
 }
-
-export const SessionSchema = SchemaFactory.createForClass(Session);

@@ -17,14 +17,12 @@ import { SessionQueryRepo } from '../infrastructure/session.query.repo';
 import { SecurityDevicesService } from '../application/security-devices.service';
 import { DeviceById } from './dto/input/device-by-id';
 import { ResultStatusEnum } from '../../../base/result/result-status.enum';
-import { SessionQueryRepoPg } from '../infrastructure/session.query.repo.pg';
 
 @SkipThrottle()
 @Controller(SecurityDevicesRoutes.base)
 export class SecurityDevicesController {
   constructor(
     private sessionQueryRepo: SessionQueryRepo,
-    private sessionQueryRepoPg: SessionQueryRepoPg,
     private securityDevicesService: SecurityDevicesService
   ) {}
 
@@ -32,7 +30,7 @@ export class SecurityDevicesController {
   @Get()
   @HttpCode(HttpStatus.OK)
   async getAll(@CurrentDeviceId() deviceId) {
-    return await this.sessionQueryRepoPg.getAllUserSessions(deviceId);
+    return await this.sessionQueryRepo.getAllUserSessions(deviceId);
   }
 
   @UseGuards(JwtRefreshTokenGuard)

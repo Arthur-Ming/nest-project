@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InterlayerNotice } from '../../../base/result/result';
 import { ResultStatusEnum } from '../../../base/result/result-status.enum';
-import { SessionRepoPg } from '../infrastructure/session.repo.pg';
+import { SessionRepo } from '../infrastructure/session.repo';
 
 @Injectable()
 export class SecurityDevicesService {
-  constructor(private readonly sessionRepoPg: SessionRepoPg) {}
+  constructor(private readonly sessionRepoPg: SessionRepo) {}
 
   async removeExcludeCurrent(currentDeviceId: string) {
     return this.sessionRepoPg.removeExcludeCurrent(currentDeviceId);

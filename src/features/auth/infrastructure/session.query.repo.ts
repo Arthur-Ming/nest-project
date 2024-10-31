@@ -1,30 +1,39 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Session } from '../domain/session.entity';
-import { Model } from 'mongoose';
-import { WithId } from 'mongodb';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class SessionQueryRepo {
-  private mapToOutput = (session: WithId<Session>) => {
+  private mapToOutput = (session: any) => {
     return {
       ip: session.ip,
       title: session.deviceName,
       lastActiveDate: new Date(session.iat * 1000).toISOString(),
-      deviceId: session._id.toString(),
+      deviceId: session.id.toString(),
     };
   };
-  constructor(@InjectModel(Session.name) private sessionModel: Model<Session>) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  // async getById(id: string) {
-  //   return this.sessionModel.findById(new ObjectId(id));
-  // }
-  //
-  // async getAllUserSessions(deviceId: string) {
-  //   const session = await this.sessionModel.findById(new ObjectId(deviceId));
-  //   if (!session) return null;
-  //
-  //   const allUserSessions = await this.sessionModel.find({ userId: session.userId });
-  //   return allUserSessions.map((i) => this.mapToOutput(i));
-  // }
+  async getById(id: string) {
+    const [result = null] = await this.dataSource.query(
+      `SELECT * FROM "Sessions" as s
+     WHERE s.id='${id}'`
+    );
+    if (!result) return null;
+    return result;
+  }
+
+  async getAllUserSessions(deviceId: string) {
+    const [session = null] = await this.dataSource.query(
+      `SELECT * FROM "Sessions" as s
+     WHERE s.id='${deviceId}'`
+    );
+    if (!session) return null;
+
+    const users = await this.dataSource.query(
+      `SELECT * FROM "Sessions" as s
+     WHERE s."userId"='${session.userId}'`
+    );
+    return users.map((i) => this.mapToOutput(i));
+  }
 }

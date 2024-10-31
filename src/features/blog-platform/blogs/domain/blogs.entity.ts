@@ -1,24 +1,14 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { Entity } from 'typeorm';
 
-export type BlogDocument = HydratedDocument<Blog>;
-
-@Schema()
-export class Blog {
-  @Prop()
+@Entity()
+export class BlogsEntity {
   name: string;
 
-  @Prop()
   description: string;
 
-  @Prop()
   websiteUrl: string;
 
-  @Prop()
-  createdAt: number;
+  createdAt?: Date;
 
-  @Prop()
   isMembership: boolean;
 }
-
-export const BlogSchema = SchemaFactory.createForClass(Blog);

@@ -1,21 +1,19 @@
-import { BlogDocument } from '../../../domain/blogs.entity';
-
 export interface BlogOutputData {
   id: string;
   name: string;
   description: string;
   websiteUrl: string;
-  createdAt: string;
+  createdAt: Date | string;
   isMembership: boolean;
 }
 
-export const blogsMapToOutput = (dbBlog: BlogDocument): BlogOutputData => {
+export const blogsMapToOutput = (dbBlog: any): BlogOutputData => {
   return {
-    id: dbBlog._id.toString(),
+    id: dbBlog.id,
     name: dbBlog.name,
     description: dbBlog.description,
     websiteUrl: dbBlog.websiteUrl,
-    createdAt: new Date(dbBlog.createdAt).toISOString(),
+    createdAt: dbBlog.createdAt.toISOString(),
     isMembership: dbBlog.isMembership,
   };
 };

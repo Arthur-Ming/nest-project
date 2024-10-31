@@ -34,13 +34,13 @@ import { CurrentDeviceId } from '../decorators/current-device-id';
 @Controller(AuthRoutes.base)
 export class AuthController {
   constructor(private authService: AuthService) {}
-  @SkipThrottle({ default: false })
+  //@SkipThrottle({ default: false })
   @Post(AuthRoutes.registration)
   @HttpCode(HttpStatus.NO_CONTENT)
   async registration(@Body() dto: CreateUserDto) {
     await this.authService.registration(dto);
   }
-  @SkipThrottle({ default: false })
+  //@SkipThrottle({ default: false })
   @Post(AuthRoutes.passwordRecovery)
   @HttpCode(HttpStatus.NO_CONTENT)
   async passwordRecovery(@Body() dto: PasswordRecoveryDto) {
@@ -50,26 +50,26 @@ export class AuthController {
     }
   }
 
-  @SkipThrottle({ default: false })
+  // @SkipThrottle({ default: false })
   @Post(AuthRoutes.newPassword)
   @HttpCode(HttpStatus.NO_CONTENT)
   async newPassword(@Body() dto: NewPasswordDto) {
     await this.authService.newPassword(dto);
   }
-  @SkipThrottle({ default: false })
+  // @SkipThrottle({ default: false })
   @Post(AuthRoutes.registrationConfirmation)
   @HttpCode(HttpStatus.NO_CONTENT)
   async registrationConfirmation(@Body() dto: ConfirmDto) {
     await this.authService.registrationConfirmation(dto.code);
   }
-  @SkipThrottle({ default: false })
+  // @SkipThrottle({ default: false })
   @Post(AuthRoutes.registrationEmailResending)
   @HttpCode(HttpStatus.NO_CONTENT)
   async registrationEmailResending(@Body() dto: RegistrationEmailResendingDto) {
     await this.authService.registrationEmailResending(dto.email);
   }
 
-  @SkipThrottle({ default: false })
+  // @SkipThrottle({ default: false })
   @UseGuards(LocalAuthGuard)
   @Post(AuthRoutes.login)
   @HttpCode(HttpStatus.OK)
