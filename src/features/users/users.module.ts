@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './domain/users.entity';
 import { UsersController } from './api/users.controller';
 import { UsersService } from './application/users.service';
 import { UsersRepo } from './infrastructure/users.repo';
@@ -12,7 +10,6 @@ import { IsUserExistByLoginConstraint } from './decorators/validate/is-user-exis
 import { IsUserExistByEmailConstraint } from './decorators/validate/is-user-exist-by-email';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])],
   controllers: [UsersController],
   providers: [
     UsersService,
@@ -29,12 +26,10 @@ import { IsUserExistByEmailConstraint } from './decorators/validate/is-user-exis
   ],
   exports: [
     UsersService,
-    UsersRepo,
     UsersQueryRepo,
     IsUserExistConstraint,
     IsUserExistByLoginConstraint,
     IsUserExistByEmailConstraint,
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
 })
 export class UsersModule {}

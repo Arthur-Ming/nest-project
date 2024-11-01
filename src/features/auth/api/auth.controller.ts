@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Ip,
   NotFoundException,
   Post,
   Res,
@@ -25,54 +26,31 @@ import { Response } from 'express';
 import { LocalAuthGuard } from '../guards/local-auth.guard';
 import { CurrentUserId } from '../decorators/current-user';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { DeviceName } from '../decorators/device-name';
+import { JwtRefreshTokenGuard } from '../guards/jwt-refresh-token.guard';
+import { CurrentDeviceId } from '../decorators/current-device-id';
 
 @SkipThrottle()
 @Controller(AuthRoutes.base)
 export class AuthController {
   constructor(private authService: AuthService) {}
-  @SkipThrottle({ default: false })
-  @Post(AuthRoutes.registration)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async registration(@Body() dto: CreateUserDto) {
-    await this.authService.registration(dto);
-  }
-  @SkipThrottle({ default: false })
-  @Post(AuthRoutes.passwordRecovery)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async passwordRecovery(@Body() dto: PasswordRecoveryDto) {
-    const result = await this.authService.passwordRecovery(dto.email);
-    if (result.status === ResultStatusEnum.NotFound) {
-      throw new BadRequestException();
-    }
-  }
 
-  @SkipThrottle({ default: false })
-  @Post(AuthRoutes.newPassword)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async newPassword(@Body() dto: NewPasswordDto) {
-    await this.authService.newPassword(dto);
-  }
-  @SkipThrottle({ default: false })
-  @Post(AuthRoutes.registrationConfirmation)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async registrationConfirmation(@Body() dto: ConfirmDto) {
-    await this.authService.registrationConfirmation(dto.code);
-  }
-  @SkipThrottle({ default: false })
-  @Post(AuthRoutes.registrationEmailResending)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async registrationEmailResending(@Body() dto: RegistrationEmailResendingDto) {
-    await this.authService.registrationEmailResending(dto.email);
-  }
+  // @SkipThrottle({ default: false })
   @UseGuards(LocalAuthGuard)
   @Post(AuthRoutes.login)
   @HttpCode(HttpStatus.OK)
   async login(
-    @Body() dto: LoginUserDto,
+    @Body() loginUserDto: LoginUserDto,
     @CurrentUserId() userId,
+    @DeviceName() deviceName,
+    @Ip() ip,
     @Res({ passthrough: true }) response: Response
   ) {
-    const result = await this.authService.login(dto);
+    const result = await this.authService.login(loginUserDto, {
+      ip,
+      deviceName,
+      userId,
+    });
     if (result.status === ResultStatusEnum.Unauthorized) {
       throw new UnauthorizedException();
     }
@@ -82,6 +60,67 @@ export class AuthController {
       return { accessToken };
     }
   }
+
+  //@SkipThrottle({ default: false })
+  @Post(AuthRoutes.passwordRecovery)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async passwordRecovery(@Body() dto: PasswordRecoveryDto) {
+    const result = await this.authService.passwordRecovery(dto.email);
+    if (result.status === ResultStatusEnum.NotFound) {
+      throw new BadRequestException();
+    }
+  }
+  // @SkipThrottle({ default: false })
+  @Post(AuthRoutes.newPassword)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async newPassword(@Body() dto: NewPasswordDto) {
+    await this.authService.newPassword(dto);
+  }
+
+  @UseGuards(JwtRefreshTokenGuard)
+  @Post(AuthRoutes.refreshToken)
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(@CurrentDeviceId() deviceId, @Res({ passthrough: true }) response: Response) {
+    const result = await this.authService.refreshToken(deviceId);
+
+    if (result.status === ResultStatusEnum.Unauthorized) {
+      throw new UnauthorizedException();
+    }
+    const { accessToken, refreshToken } = result.getData();
+    if (result.status === ResultStatusEnum.Success) {
+      response.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
+      return { accessToken };
+    }
+  }
+
+  // @SkipThrottle({ default: false })
+  @Post(AuthRoutes.registrationConfirmation)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async registrationConfirmation(@Body() dto: ConfirmDto) {
+    await this.authService.registrationConfirmation(dto.code);
+  }
+
+  //@SkipThrottle({ default: false })
+  @Post(AuthRoutes.registration)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async registration(@Body() dto: CreateUserDto) {
+    await this.authService.registration(dto);
+  }
+
+  // @SkipThrottle({ default: false })
+  @Post(AuthRoutes.registrationEmailResending)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async registrationEmailResending(@Body() dto: RegistrationEmailResendingDto) {
+    await this.authService.registrationEmailResending(dto.email);
+  }
+
+  @UseGuards(JwtRefreshTokenGuard)
+  @Post(AuthRoutes.logout)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async logout(@CurrentDeviceId() deviceId) {
+    await this.authService.logout(deviceId);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get(AuthRoutes.me)
   @HttpCode(HttpStatus.OK)

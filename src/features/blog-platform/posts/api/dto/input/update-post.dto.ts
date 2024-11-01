@@ -1,3 +1,3 @@
-import { CreatePostDto } from './create-post.dto';
+import { CreatePostForSpecifiedBlogDto } from './create-post-for-specified-blog.dto';
 
-export class UpdatePostDto extends CreatePostDto {}
+export class UpdatePostDto extends CreatePostForSpecifiedBlogDto {}

@@ -17,7 +17,7 @@ export class ConfirmCodeValidateConstraint implements ValidatorConstraintInterfa
     if (
       !confirmation ||
       confirmation.isConfirmed ||
-      confirmation.expirationDate < Number(new Date())
+      Number(confirmation.exp) < Number(new Date())
     ) {
       return false;
     }

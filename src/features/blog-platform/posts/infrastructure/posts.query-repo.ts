@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Post } from '../domain/posts.entity';
-import { Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import { LikeStatus, PostOutputModel, WithLikesInfo } from '../api/dto/output/post.output.model';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { PostsPaginationQueryParamsDto } from '../api/dto/input/posts-pagination-query-params.dto';
 import { Pagination } from '../../../../common/types';
 
@@ -28,124 +27,72 @@ const filter = (blogId: string | null) => {
 };
 @Injectable()
 export class PostsQueryRepo {
-  constructor(@InjectModel(Post.name) private postModel: Model<Post>) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
   private mapToOutput = (
     post: any, //PostDocument & { blogName: string }
     requestUserId: string | null
   ): WithLikesInfo<PostOutputModel> => {
     return {
-      id: post._id.toString(),
+      id: post.id.toString(),
       title: post.title,
       shortDescription: post.shortDescription,
       content: post.content,
       blogId: post.blogId.toString(),
       blogName: post.blogName,
-      createdAt: new Date(post.createdAt).toISOString(),
+      createdAt: post.createdAt.toISOString(),
       extendedLikesInfo: {
-        likesCount: post.likes.filter((like) => like.status === LikeStatus.Like).length,
-        dislikesCount: post.likes.filter((like) => like.status === LikeStatus.Dislike).length,
-        myStatus: getCurrentUserLikeStatus(post.likes, requestUserId),
-        newestLikes: post.likes
-          .filter((like) => like.status === LikeStatus.Like)
-          .sort((a, b) => Number(new Date(b.createdAt)) - Number(new Date(a.createdAt)))
-          .map((like) => ({
-            addedAt: new Date(like.createdAt).toISOString(),
-            userId: like.likeAuthor?._id ? like.likeAuthor._id.toString() : null,
-            login: like.likeAuthor?.login ? like.likeAuthor.login : null,
-          }))
-          .slice(0, 3),
+        likesCount: 0, // post.likes.filter((like) => like.status === LikeStatus.Like).length,
+        dislikesCount: 0, //post.likes.filter((like) => like.status === LikeStatus.Dislike).length,
+        myStatus: LikeStatus.None, // getCurrentUserLikeStatus(post.likes, requestUserId),
+        newestLikes: [],
       },
     };
   };
-  private joinOptions = () => {
-    return [
-      {
-        $lookup: {
-          from: 'blogs',
-          localField: 'blogId',
-          foreignField: '_id',
-          as: 'blog',
-        },
-      },
 
-      {
-        $lookup: {
-          from: 'postlikes',
-          localField: '_id',
-          foreignField: 'postId',
-          as: 'likes',
-          pipeline: [
-            {
-              $lookup: {
-                from: 'users',
-                localField: 'authorId',
-                foreignField: '_id',
-                as: 'likeAuthors',
-              },
-            },
-            {
-              $addFields: {
-                likeAuthor: { $mergeObjects: [{ $arrayElemAt: ['$likeAuthors', 0] }] },
-              },
-            },
-          ],
-        },
-      },
-
-      {
-        $addFields: {
-          blogInfo: { $mergeObjects: [{ $arrayElemAt: ['$blog', 0] }] },
-        },
-      },
-
-      {
-        $project: {
-          _id: 1,
-          title: 1,
-          shortDescription: 1,
-          content: 1,
-          blogName: '$blogInfo.name',
-          blogId: 1,
-          createdAt: 1,
-          likes: 1,
-          likeAuthor: 1,
-        },
-      },
-    ];
-  };
   getTotalCount = async (blogId: string | null) => {
-    return this.postModel.countDocuments(filter(blogId));
-  };
-  findById = async (postId: string, requestUserId: string | null) => {
-    const posts = await this.postModel.aggregate([
-      {
-        $match: { _id: new ObjectId(postId) },
-      },
-      ...this.joinOptions(),
-    ]);
-
-    if (!posts || !posts[0]) {
-      return null;
+    if (!blogId) {
+      const [{ count: totalCount }] = await this.dataSource.query(`
+    SELECT COUNT(*) FROM "Posts" as p
+      `);
+      return Number(totalCount);
     }
 
-    return this.mapToOutput(posts[0], requestUserId);
+    const [{ count: totalCount }] = await this.dataSource.query(`
+    SELECT COUNT(*) FROM "Posts" as p
+        WHERE p."blogId" = '${blogId}'`);
+    return Number(totalCount);
   };
+
+  async findById(postId: string, requestUserId: string | null) {
+    const [post] = await this.dataSource.query(`
+  SELECT p.*, b.name as "blogName" FROM "Posts" as p
+  JOIN "Blogs" as b ON p."blogId" =b.id
+  WHERE p.id='${postId}'`);
+    if (!post) return null;
+    return this.mapToOutput(post, requestUserId);
+  }
 
   async findAll(
     queryParams: PostsPaginationQueryParamsDto,
     requestUserId: string | null,
     blogId: string | null
   ): Promise<Pagination<WithLikesInfo<PostOutputModel>[]>> {
-    const posts = await this.postModel.aggregate([
-      {
-        $match: { blogId: blogId ? new ObjectId(blogId) : { $exists: true } },
-      },
-      ...this.joinOptions(),
-      { $sort: { [queryParams.sortBy]: queryParams.sortDirection === 'asc' ? 1 : -1 } },
-      { $skip: (queryParams.pageNumber - 1) * queryParams.pageSize },
-      { $limit: queryParams.pageSize },
-    ]);
+    console.log(blogId);
     const totalCount = await this.getTotalCount(blogId);
+    const offSet = (queryParams.pageNumber - 1) * queryParams.pageSize;
+    const limit = queryParams.pageSize;
+    let d =
+      queryParams.sortBy === 'createdAt' ? `"createdAt"` : `"${queryParams.sortBy}" COLLATE "C"`;
+    d = d === `"blogName" COLLATE "C"` ? 'b.name' : d;
+    console.log(d);
+    const posts = await this.dataSource.query(`
+    SELECT p.*, b.name as "blogName" FROM "Posts" as p
+          JOIN "Blogs" as b ON p."blogId" =b.id
+          WHERE p.title ILIKE '%${queryParams.searchNameTerm}%'
+          ORDER BY ${d} ${queryParams.sortDirection}
+          OFFSET ${offSet}
+          LIMIT ${limit}
+          `);
 
     return {
       pagesCount: Math.ceil(totalCount / queryParams.pageSize),

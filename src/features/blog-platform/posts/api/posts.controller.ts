@@ -1,20 +1,16 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
-  Post,
-  Get,
   Param,
-  Query,
+  Post,
   Put,
-  Delete,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { PostsService } from '../application/posts.service';
-import { PostsQueryRepo } from '../infrastructure/posts.query-repo';
-import { UpdatePostDto } from './dto/input/update-post.dto';
-import { CreatePostDto } from './dto/input/create-post.dto';
 import { PostByIdDto } from './dto/input/post-by-id.dto';
 import { PostsPaginationQueryParamsDto } from './dto/input/posts-pagination-query-params.dto';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -27,7 +23,7 @@ import { CommentsPaginationQueryParamsDto } from '../../comments/api/dto/input/c
 import { CreateCommentDto } from '../../comments/api/dto/input/create-comment.dto';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 import { CurrentUserId } from '../../../auth/decorators/current-user';
-import { BasicAuthGuard } from '../../../auth/guards/basic-auth.guard';
+import { PostsQueryRepo } from '../infrastructure/posts.query-repo';
 
 @SkipThrottle()
 @Controller('posts')
@@ -66,17 +62,7 @@ export class PostsController {
     const userId = payload ? payload.userId : null;
     return await this.commentsQueryRepo.findAll(queryParams, params.id, userId);
   }
-  @UseGuards(BasicAuthGuard)
-  @Post()
-  @HttpCode(HttpStatus.CREATED)
-  async createPost(
-    @Body() createPostDto: CreatePostDto,
-    @ExtractAccessToken(DecodeJwtTokenPipe) payload: AccessTokenPayloadDto
-  ) {
-    const userId = payload ? payload.userId : null;
-    const { id } = await this.postsService.addPost(createPostDto);
-    return await this.postsQueryRepo.findById(id, userId);
-  }
+
   @UseGuards(JwtAuthGuard)
   @Post(':id/comments')
   @HttpCode(HttpStatus.CREATED)
@@ -88,12 +74,6 @@ export class PostsController {
     const { id } = await this.postsService.addComment(createCommentDto, userId, params.id);
     return this.commentsQueryRepo.findById(id, userId);
   }
-  @UseGuards(BasicAuthGuard)
-  @Put(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async updatePost(@Param() params: PostByIdDto, @Body() updatePostDto: UpdatePostDto) {
-    await this.postsService.updatePost(params.id, updatePostDto);
-  }
 
   @UseGuards(JwtAuthGuard)
   @Put(':id/like-status')
@@ -104,12 +84,5 @@ export class PostsController {
     @Body() likePostDto: LikePostDto
   ) {
     await this.postsService.likePost(payload.userId, params.id, likePostDto.likeStatus);
-  }
-
-  @UseGuards(BasicAuthGuard)
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePost(@Param() params: PostByIdDto) {
-    await this.postsService.deletePost(params.id);
   }
 }

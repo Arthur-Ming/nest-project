@@ -24,6 +24,17 @@ export class UsersService {
     return this.usersRepo.updatePassword(userId, hash);
   }
 
+  async findById(userId: string) {
+    return this.usersRepo.findById(userId);
+  }
+  async findByLoginOrEmail(loginOrEmail: string) {
+    return this.usersRepo.findByLoginOrEmail(loginOrEmail);
+  }
+
+  async findByEmail(email: string) {
+    return this.usersRepo.findByEmail(email);
+  }
+
   async deleteUser(userId: string) {
     await this.usersRepo.remove(userId);
   }

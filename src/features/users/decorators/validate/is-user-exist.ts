@@ -13,6 +13,7 @@ export class IsUserExistConstraint implements ValidatorConstraintInterface {
   constructor(private readonly usersRepo: UsersRepo) {}
   async validate(id: string) {
     const isExists = await this.usersRepo.existsById(id);
+    console.log(isExists);
     if (!isExists) {
       throw new NotFoundException();
     }

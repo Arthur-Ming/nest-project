@@ -1,22 +1,10 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
-import { ObjectId } from 'mongodb';
+import { Entity } from 'typeorm';
 
-export type EmailConfirmationDocument = HydratedDocument<EmailConfirmation>;
-
-@Schema()
+@Entity()
 export class EmailConfirmation {
-  @Prop()
-  userId: ObjectId;
+  userId: string;
 
-  @Prop()
-  confirmationCode: string;
+  exp: number;
 
-  @Prop()
-  expirationDate: number;
-
-  @Prop()
   isConfirmed: boolean;
 }
-
-export const EmailConfirmationSchema = SchemaFactory.createForClass(EmailConfirmation);

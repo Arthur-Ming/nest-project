@@ -1,55 +1,80 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { User } from '../domain/users.entity';
-import { ObjectId } from 'mongodb';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class UsersRepo {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async add(user: User) {
-    const addedUser = await this.userModel.create(user);
-    return addedUser._id.toString();
+    const [{ id }] = await this.dataSource.query(`
+    INSERT INTO "Users" ("login", "password", "email") 
+    VALUES ('${user.login}', '${user.password}', '${user.email}')
+    RETURNING id
+    `);
+
+    return id;
   }
 
   async remove(userId: string) {
-    const deleteResult = await this.userModel.deleteOne({ _id: new ObjectId(userId) });
-    return deleteResult.deletedCount === 1;
+    const [, deleteResult] = await this.dataSource.query(`
+   DELETE FROM "Users"
+   WHERE id='${userId}'`);
+
+    return deleteResult === 1;
   }
-  existsById(id: string) {
-    return this.userModel.exists({ _id: new ObjectId(id) });
+  async existsById(id: string) {
+    const [{ exists }] = await this.dataSource.query(`
+    SELECT EXISTS(SELECT * FROM "Users" WHERE id='${id}')
+    `);
+    return exists;
   }
-  existsByLogin(login: string) {
-    return this.userModel.exists({ login });
+  async existsByLogin(login: string) {
+    const [{ exists }] = await this.dataSource.query(`
+    SELECT EXISTS(SELECT * FROM "Users" WHERE login='${login}')
+    `);
+    return exists;
   }
 
-  existsByEmail(email: string) {
-    return this.userModel.exists({ email });
+  async existsByEmail(email: string) {
+    const [{ exists }] = await this.dataSource.query(`
+    SELECT EXISTS(SELECT * FROM "Users" WHERE email='${email}')
+    `);
+    return exists;
   }
   async findByLoginOrEmail(loginOrEmail: string) {
-    const user = await this.userModel.findOne({
-      $or: [{ email: loginOrEmail }, { login: loginOrEmail }],
-    });
-    if (!user) return null;
+    const [user = null] = await this.dataSource.query(`
+       SELECT * FROM "Users" 
+       WHERE email='${loginOrEmail}' OR login='${loginOrEmail}'
+    `);
+    return user;
+  }
+
+  async findByEmail(email: string) {
+    const [user = null] = await this.dataSource.query(`
+       SELECT * FROM "Users" 
+       WHERE email='${email}'
+    `);
     return user;
   }
 
   async findById(userId: string) {
-    const user = await this.userModel.findById(userId);
-    if (!user) return null;
+    const [user = null] = await this.dataSource.query(`
+       SELECT * FROM "Users" 
+       WHERE id='${userId}'
+    `);
     return user;
   }
 
   async updatePassword(userId: string, newPasswordHash: string) {
-    const updateResult = await this.userModel.updateOne(
-      { _id: new ObjectId(userId) },
-      {
-        $set: {
-          password: newPasswordHash,
-        },
-      }
+    const [, matchedCount] = await this.dataSource.query(
+      `UPDATE "Users" 
+             SET "password" = '${newPasswordHash}'
+       WHERE id = '${userId}'     
+             `
     );
-    return updateResult.matchedCount === 1;
+
+    return matchedCount === 1;
   }
 }

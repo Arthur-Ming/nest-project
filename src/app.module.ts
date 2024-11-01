@@ -7,8 +7,8 @@ import { AuthModule } from './features/auth/auth.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { MailerModule } from '@nestjs-modules/mailer';
-
 import { BlogPlatformModule } from './features/blog-platform/blog-platform.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
@@ -23,6 +23,17 @@ import { BlogPlatformModule } from './features/blog-platform/blog-platform.modul
         ? appSettings.api.MONGO_CONNECTION_URI_FOR_TESTS
         : appSettings.api.MONGO_CONNECTION_URI
     ),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'localhost',
+      port: 5432,
+      password: 'art',
+      username: 'art',
+      entities: [],
+      database: 'BloggersPlatform',
+      synchronize: true,
+      logging: true,
+    }),
     MailerModule.forRoot({
       transport: {
         service: 'gmail',

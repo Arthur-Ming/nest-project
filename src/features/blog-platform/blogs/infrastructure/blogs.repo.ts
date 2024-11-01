@@ -1,33 +1,48 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { Blog } from '../domain/blogs.entity';
-import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { BlogsEntity } from '../domain/blogs.entity';
 import { UpdateBlogDto } from '../api/dto/input/update-blog.dto';
 
 @Injectable()
 export class BlogsRepo {
-  constructor(@InjectModel(Blog.name) private blogModel: Model<Blog>) {}
-  async add(blog: Blog) {
-    const newBlog = await this.blogModel.create(blog);
-    return newBlog._id.toString();
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
+
+  async add(blog: BlogsEntity) {
+    const [{ id }] = await this.dataSource.query(`
+    INSERT INTO "Blogs" ("name", "description", "websiteUrl", "isMembership") 
+    VALUES ('${blog.name}', '${blog.description}', '${blog.websiteUrl}', '${blog.isMembership}')
+    RETURNING id
+    `);
+
+    return id;
   }
+
+  async existsById(id: string) {
+    const [{ exists }] = await this.dataSource.query(`
+    SELECT EXISTS(SELECT * FROM "Blogs" WHERE id='${id}')
+    `);
+    return exists;
+  }
+
   async update(blogId: string, dto: UpdateBlogDto): Promise<boolean> {
-    const updateResult = await this.blogModel.updateOne(
-      { _id: new ObjectId(blogId) },
-      {
-        $set: dto,
-      }
+    const [, matchedCount] = await this.dataSource.query(
+      `UPDATE "Blogs" 
+             SET 
+             "name" = '${dto.name}',
+             "description" = '${dto.description}',
+             "websiteUrl" = '${dto.websiteUrl}'
+       WHERE id = '${blogId}'     
+             `
     );
 
-    return updateResult.matchedCount === 1;
+    return matchedCount === 1;
   }
-  existsById(id: string) {
-    console.log(id);
-    return this.blogModel.exists({ _id: new ObjectId(id) });
-  }
-  async remove(blogId: string): Promise<boolean> {
-    const deleteResult = await this.blogModel.deleteOne({ _id: new ObjectId(blogId) });
-    return deleteResult.deletedCount === 1;
+  async remove(blogId: string) {
+    const [, deleteResult] = await this.dataSource.query(`
+   DELETE FROM "Blogs"
+   WHERE id='${blogId}'`);
+
+    return deleteResult === 1;
   }
 }
