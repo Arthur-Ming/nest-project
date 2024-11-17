@@ -1,25 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCommentDto } from '../api/dto/input/create-comment.dto';
-import { CommentsRepo } from '../infrastructure/comments.repo';
-import { ObjectId } from 'mongodb';
+import { CommentsRepo } from '../infrastructure/pg/comments.repo';
+import { CommentsLikesRepo } from '../infrastructure/pg/comments-likes.repo';
 import { UpdateCommentDto } from '../api/dto/input/update-comment.dto';
-import { CommentLikesRepo } from '../infrastructure/comment-likes.repo';
 import { LikesStatusEnum } from '../../../../common/enum/likes-status.enum';
 
 @Injectable()
 export class CommentsService {
   constructor(
     private readonly commentsRepo: CommentsRepo,
-    private readonly commentLikesRepo: CommentLikesRepo
+    private readonly commentLikesRepo: CommentsLikesRepo
   ) {}
   async createComment(dto: CreateCommentDto, userId: string, postId: string) {
     const commentId = await this.commentsRepo.add({
       content: dto.content,
-      createdAt: Date.now(),
-      postId: new ObjectId(postId),
-      userId: new ObjectId(userId),
+      postId: postId,
+      userId: userId,
     });
-    return { id: commentId };
+    return commentId;
   }
 
   async updateComment(id: string, updateCommentDto: UpdateCommentDto) {
@@ -31,9 +29,8 @@ export class CommentsService {
   }
   async likeComment(authorId: string, commentId: string, status: LikesStatusEnum) {
     await this.commentLikesRepo.put({
-      createdAt: Date.now(),
-      authorId: new ObjectId(authorId),
-      commentId: new ObjectId(commentId),
+      authorId,
+      commentId,
       status,
     });
   }

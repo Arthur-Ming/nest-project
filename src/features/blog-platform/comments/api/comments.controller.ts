@@ -11,15 +11,15 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommentsService } from '../application/comments.service';
-import { CommentsQueryRepo } from '../infrastructure/comments.query-repo';
+import { CommentsQueryRepo } from '../infrastructure/pg/comments.query-repo';
 import { CommentByIdDto } from './dto/input/comment-by-id.dto';
 import { UpdateCommentDto } from './dto/input/update-comment.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 import { ExtractAccessToken } from '../../../auth/decorators/extract-access-token';
 import { DecodeJwtTokenPipe } from '../../../auth/pipes/decode-jwt-token.pipe';
 import { AccessTokenPayloadDto } from '../../../auth/api/dto/output/access-token-payload.dto';
-import { LikePostDto } from '../../posts/api/dto/input/like-post.dto';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { LikePostDto } from '../../posts/api/dto/input/like-post.dto';
 
 @SkipThrottle()
 @Controller('comments')

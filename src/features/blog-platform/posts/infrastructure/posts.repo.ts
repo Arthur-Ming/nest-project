@@ -44,4 +44,11 @@ export class PostsRepo {
     `);
     return exists;
   }
+
+  async existsForSpecificBlog(blogId: string, postId: string) {
+    const [{ exists }] = await this.dataSource.query(`
+    SELECT EXISTS(SELECT * FROM "Posts" as p WHERE p.id='${postId}' AND p."blogId"='${blogId}')
+    `);
+    return exists;
+  }
 }

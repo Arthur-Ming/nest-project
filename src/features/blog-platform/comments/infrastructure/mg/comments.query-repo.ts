@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ObjectId, WithId } from 'mongodb';
-import { Comment } from '../domain/comments.entity';
-import { CommentsOutputDto, LikeStatus } from '../api/dto/output/comments.output.dto';
-import { CommentsPaginationQueryParamsDto } from '../api/dto/input/comments-pagination-query-params.dto';
-import { CommentLikes } from '../domain/comment-likes.entity';
-import { User } from '../../../users/domain/users.entity';
-import { Pagination } from '../../../../common/types';
+import { Comment } from '../../domain/mg/comments.entity';
+import { CommentsOutputDto, LikeStatus } from '../../api/dto/output/comments.output.dto';
+import { CommentsPaginationQueryParamsDto } from '../../api/dto/input/comments-pagination-query-params.dto';
+import { CommentLikes } from '../../domain/mg/comment-likes.entity';
+import { User } from '../../../../users/domain/users.entity';
+import { Pagination } from '../../../../../common/types';
 
 const getCurrentUserLikeStatus = (likes: any[], currentUserId: string | null): LikeStatus => {
   if (!currentUserId) {

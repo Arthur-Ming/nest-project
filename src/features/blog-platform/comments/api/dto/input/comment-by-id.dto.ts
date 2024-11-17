@@ -1,8 +1,8 @@
 import { IsCommentExist } from '../../../decorators/validate/is-comment-exist';
-import { IsValidDbId } from '../../../../../../common/decorators/validate/is-valid-db-id';
+import { IsUUID } from 'class-validator';
 
 export class CommentByIdDto {
   @IsCommentExist()
-  @IsValidDbId()
+  @IsUUID()
   id: string;
 }

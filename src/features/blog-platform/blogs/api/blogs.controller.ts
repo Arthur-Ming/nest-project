@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Post,
   Put,
@@ -34,7 +35,6 @@ export class BlogsController {
   constructor(
     private blogsService: BlogsService,
     private blogsQueryRepoPg: BlogsQueryRepo,
-    private postsQueryRepo: PostsQueryRepo,
     private postsQueryRepoPg: PostsQueryRepo
   ) {}
   @Get('blogs')
@@ -136,6 +136,9 @@ export class BlogsController {
   @Delete('sa/blogs/:blogId/posts/:postId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deletePost(@Param() params: PostForBlogByIdDto) {
-    await this.blogsService.deletePost(params.blogId, params.postId);
+    const result = await this.blogsService.deletePost(params.blogId, params.postId);
+    if (result.status === ResultStatusEnum.NotFound) {
+      throw new NotFoundException();
+    }
   }
 }
