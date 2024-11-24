@@ -5,7 +5,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CommentsRepo } from '../../infrastructure/comments.repo';
+import { CommentsRepo } from '../../infrastructure/pg/comments.repo';
 
 @ValidatorConstraint({ name: 'IsCommentExistConstraint', async: true })
 @Injectable()

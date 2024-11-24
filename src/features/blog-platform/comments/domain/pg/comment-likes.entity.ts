@@ -1,10 +1,10 @@
 import { Entity } from 'typeorm';
 
 @Entity()
-export class PostsLikesEntity {
+export class CommentLikesEntity {
   authorId: string;
 
-  postId: string;
+  commentId: string;
 
   status: string;
 }

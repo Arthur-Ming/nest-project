@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Comment } from '../domain/comments.entity';
+import { Comment } from '../../domain/mg/comments.entity';
 import { ObjectId } from 'mongodb';
-import { UpdateCommentDto } from '../api/dto/input/update-comment.dto';
+import { UpdateCommentDto } from '../../api/dto/input/update-comment.dto';
 
 @Injectable()
 export class CommentsRepo {

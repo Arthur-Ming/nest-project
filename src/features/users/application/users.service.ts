@@ -34,6 +34,9 @@ export class UsersService {
   async findByEmail(email: string) {
     return this.usersRepo.findByEmail(email);
   }
+  async isExist(id: string) {
+    return await this.usersRepo.existsById(id);
+  }
 
   async deleteUser(userId: string) {
     await this.usersRepo.remove(userId);

@@ -9,8 +9,8 @@ export class TestingController {
   @HttpCode(204)
   async deleteAllData() {
     await this.dataSource.query(`
-   DELETE FROM "Users"
-           `);
+    DELETE FROM "Users"
+            `);
     await this.dataSource.query(`
    DELETE FROM "Blogs"
           `);

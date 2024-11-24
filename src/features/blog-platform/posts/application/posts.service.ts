@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
 import { UpdatePostDto } from '../api/dto/input/update-post.dto';
 import { CreatePostDto } from '../api/dto/input/create-post.dto';
 import { PostsLikesRepo } from '../infrastructure/posts-likes.repo';
@@ -36,9 +35,8 @@ export class PostsService {
 
   async likePost(authorId: string, postId: string, status: LikesStatusEnum) {
     await this.postsLikesRepo.put({
-      createdAt: Date.now(),
-      authorId: new ObjectId(authorId),
-      postId: new ObjectId(postId),
+      authorId,
+      postId,
       status,
     });
   }

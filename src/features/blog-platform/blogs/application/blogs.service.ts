@@ -13,7 +13,7 @@ import { PostsRepo } from '../../posts/infrastructure/posts.repo';
 export class BlogsService {
   constructor(
     private blogsRepoPg: BlogsRepo,
-    private readonly postsRepoPg: PostsRepo,
+    private readonly postsRepo: PostsRepo,
     private postsService: PostsService
   ) {}
   async addBlog(input: CreateBlogDto): Promise<InterlayerNotice<{ newBlogId: string }>> {
@@ -38,11 +38,16 @@ export class BlogsService {
   }
 
   async updatePost(blogId: string, postId: string, updatePostDTO: UpdatePostDto) {
-    await this.postsRepoPg.update(blogId, postId, updatePostDTO);
+    await this.postsRepo.update(blogId, postId, updatePostDTO);
   }
 
   async deletePost(blogId: string, postId: string) {
-    await this.postsRepoPg.remove(blogId, postId);
+    const isPostExist = await this.postsRepo.existsForSpecificBlog(blogId, postId);
+    if (!isPostExist) {
+      return new InterlayerNotice(ResultStatusEnum.NotFound);
+    }
+    await this.postsRepo.remove(blogId, postId);
+    return new InterlayerNotice(ResultStatusEnum.Success);
   }
 
   async deleteBlog(blogId: string) {
