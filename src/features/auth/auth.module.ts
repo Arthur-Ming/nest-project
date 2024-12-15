@@ -19,9 +19,21 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { SecurityDevicesController } from './api/security-devices.controller';
 import { SessionQueryRepo } from './infrastructure/session.query.repo';
 import { SecurityDevicesService } from './application/security-devices.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { EmailConfirmation } from './domain/email-confirmation.entity';
+import { Session } from './domain/session.entity';
+import { CodeRecovery } from './domain/code-recovery.entity';
 
 @Module({
-  imports: [JwtModule.register({}), UsersModule, MailAdapterModule, PassportModule],
+  imports: [
+    TypeOrmModule.forFeature([EmailConfirmation]),
+    TypeOrmModule.forFeature([Session]),
+    TypeOrmModule.forFeature([CodeRecovery]),
+    JwtModule.register({}),
+    UsersModule,
+    MailAdapterModule,
+    PassportModule,
+  ],
   controllers: [AuthController, SecurityDevicesController],
   providers: [
     AuthService,

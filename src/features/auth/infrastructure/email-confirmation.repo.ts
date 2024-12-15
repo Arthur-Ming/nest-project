@@ -1,81 +1,48 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { EmailConfirmation } from '../domain/email-confirmation.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { EmailConfirmation, IEmailConfirmation } from '../domain/email-confirmation.entity';
 
 @Injectable()
 export class EmailConfirmationRepo {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(EmailConfirmation)
+    private emailConfirmationRepository: Repository<EmailConfirmation>
+  ) {}
 
-  // async add(dto: EmailConfirmation) {
-  //   const newConfirmation = await this.emailConfirmationModel.create(dto);
-  //   return newConfirmation._id.toString();
-  // }
-  async add(dto: EmailConfirmation) {
-    const [{ id }] = await this.dataSource.query(`
-    INSERT INTO "EmailConfirmation" ("userId", "isConfirmed", "exp") 
-    VALUES ('${dto.userId}', '${dto.isConfirmed}', '${dto.exp}')
-    RETURNING id
-    `);
+  async add(dto: IEmailConfirmation) {
+    const u = await this.emailConfirmationRepository.save({
+      exp: dto.exp,
+      isConfirmed: dto.isConfirmed,
+      userId: dto.userId,
+    });
 
-    return id;
+    return u.id;
   }
 
-  //
-  // async findById(id: string) {
-  //   const result = await this.emailConfirmationModel.findById(new ObjectId(id));
-  //   if (!result) return null;
-  //   return result;
-  // }
-  //
   async findByConfirmationCode(confirmationCode: string) {
-    const [result = null] = await this.dataSource.query(
-      `SELECT * FROM "EmailConfirmation" as e
-     WHERE e.id='${confirmationCode}'`
-    );
-
-    return result;
+    return await this.emailConfirmationRepository.findOneBy({
+      id: confirmationCode,
+    });
   }
-  //
+
   async findByUserId(userId: string) {
-    const [result = null] = await this.dataSource.query(
-      `SELECT * FROM "EmailConfirmation" as e
-     WHERE e."userId"='${userId}'`
-    );
-    if (!result) return null;
-    return result;
+    return await this.emailConfirmationRepository.findOneBy({
+      userId,
+    });
   }
 
-  async setConfirmed(confirmationCode: string) {
-    const [, matchedCount] = await this.dataSource.query(
-      `UPDATE "EmailConfirmation" 
-             SET "isConfirmed" = true
-       WHERE id = '${confirmationCode}'     
-             `
-    );
-    return matchedCount === 1;
+  async deleteByUserId(userId: string) {
+    const deleteResult = await this.emailConfirmationRepository.delete({ userId });
+
+    return deleteResult.affected === 1;
   }
 
-  async setConfirmedByUserId(userId: string) {
-    const [, matchedCount] = await this.dataSource.query(
-      `UPDATE "EmailConfirmation" 
-             SET "isConfirmed" = true
-       WHERE "userId" = '${userId}'     
-             `
-    );
-    return matchedCount === 1;
+  async setConfirmedById(id: string) {
+    const updateResult = await this.emailConfirmationRepository.update(id, {
+      isConfirmed: true,
+    });
+
+    return updateResult.affected === 1;
   }
-  // async updateConfirmationCodeByUserId(userId: string, newConfirmCode: string) {
-  //   const updateResult = await this.emailConfirmationModel.updateOne(
-  //     {
-  //       userId: new ObjectId(userId),
-  //     },
-  //     {
-  //       $set: {
-  //         confirmationCode: newConfirmCode,
-  //       },
-  //     }
-  //   );
-  //   return updateResult.matchedCount === 1;
-  // }
 }

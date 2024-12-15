@@ -1,6 +1,4 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { Connection } from 'mongoose';
-import { deleteCollections } from '../utils/delete-collections';
 import { createBlogMockDto } from './mockData/create-blog.mock.dto';
 import { updateBlogMockDto } from './mockData/update-blog.mock.dto';
 import { entitiesNum } from '../posts/constants/entities-num';
@@ -10,26 +8,26 @@ import { initSettings } from '../utils/init-settings';
 import { BlogsTestManager } from './utils/blogs-test-manager';
 import { expectValidationError } from '../utils/expect-validation-error';
 import { PaginationTestManager } from '../utils/pagination-test-manager';
-import { BlogsPaginationQueryParamsDto } from '../../src/features/blogs/api/dto/input/blogs-pagination-query-params.dto';
+
 import { aDescribe } from '../utils/aDescribe';
 import { BlogTestNamesEnum } from './constants/blog-test-names.enum';
+import { BlogsPaginationQueryParamsDto } from '../../src/features/blog-platform/blogs/api/dto/input/blogs-pagination-query-params.dto';
 
 aDescribe(BlogTestNamesEnum.blogsAll)('Blogs e2e', () => {
   let app: INestApplication;
-  let databaseConnection: Connection;
+
   let blogsTestManager: BlogsTestManager;
 
   beforeAll(async () => {
     const result = await initSettings();
     app = result.app;
-    databaseConnection = result.databaseConnection;
 
     blogsTestManager = new BlogsTestManager(app);
   });
 
   aDescribe(BlogTestNamesEnum.blogsCreating)('Blogs e2e blogs creating', () => {
     beforeAll(async () => {
-      await deleteCollections(databaseConnection);
+      // await deleteCollections(databaseConnection);
     });
     it('should get empty array', async () => {
       await blogsTestManager.mustBeEmpty();
@@ -75,7 +73,7 @@ aDescribe(BlogTestNamesEnum.blogsAll)('Blogs e2e', () => {
   });
   aDescribe(BlogTestNamesEnum.blogsReading)('Blogs e2e blogs reading', () => {
     beforeAll(async () => {
-      await deleteCollections(databaseConnection);
+      //await deleteCollections(databaseConnection);
     });
     it('should get empty array', async () => {
       await blogsTestManager.mustBeEmpty();
@@ -100,7 +98,7 @@ aDescribe(BlogTestNamesEnum.blogsAll)('Blogs e2e', () => {
   });
   aDescribe(BlogTestNamesEnum.blogsUpdating)('Blogs e2e blogs updating', () => {
     beforeAll(async () => {
-      await deleteCollections(databaseConnection);
+      // await deleteCollections(databaseConnection);
     });
     it('should get empty array', async () => {
       await blogsTestManager.mustBeEmpty();
@@ -151,7 +149,7 @@ aDescribe(BlogTestNamesEnum.blogsAll)('Blogs e2e', () => {
   });
   aDescribe(BlogTestNamesEnum.blogsDeleting)('Blogs e2e blogs deleting', () => {
     beforeAll(async () => {
-      await deleteCollections(databaseConnection);
+      // await deleteCollections(databaseConnection);
     });
     it('should get empty array', async () => {
       await blogsTestManager.mustBeEmpty();
@@ -176,7 +174,7 @@ aDescribe(BlogTestNamesEnum.blogsAll)('Blogs e2e', () => {
   });
   aDescribe(BlogTestNamesEnum.blogsPagination)('Blogs e2e get with pagination', () => {
     beforeAll(async () => {
-      await deleteCollections(databaseConnection);
+      //  await deleteCollections(databaseConnection);
     });
     it('should get entities with default pagination params', async function () {
       for (let i = 0; i < entitiesNum; i++) {

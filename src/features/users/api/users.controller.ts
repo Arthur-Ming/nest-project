@@ -24,7 +24,7 @@ import { UsersQueryRepo } from '../infrastructure/users.query-repo';
 export class UsersController {
   constructor(
     private usersService: UsersService,
-    private usersQueryRepoPg: UsersQueryRepo
+    private usersQueryRepo: UsersQueryRepo
   ) {}
   @Get()
   @HttpCode(HttpStatus.OK)
@@ -32,13 +32,13 @@ export class UsersController {
     @Query()
     queryParams: UsersPaginationQueryParamsDto
   ) {
-    return this.usersQueryRepoPg.findAll(queryParams);
+    return this.usersQueryRepo.findAll(queryParams);
   }
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async addUser(@Body() addUserModel: CreateUserDto) {
     const addedUserId = await this.usersService.addUser(addUserModel);
-    return await this.usersQueryRepoPg.findById(addedUserId);
+    return await this.usersQueryRepo.findById(addedUserId);
   }
 
   @Delete(':id')

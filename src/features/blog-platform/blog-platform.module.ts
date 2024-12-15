@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { BlogsController } from './blogs/api/blogs.controller';
 import { BlogsService } from './blogs/application/blogs.service';
 import { IsBlogExistConstraint } from './blogs/decorators/validate/is-blog-exist';
@@ -8,7 +7,6 @@ import { PostsService } from './posts/application/posts.service';
 import { PostsRepo } from './posts/infrastructure/posts.repo';
 import { PostsQueryRepo } from './posts/infrastructure/posts.query-repo';
 import { CommentsController } from './comments/api/comments.controller';
-import { CommentLikes, CommentLikesSchema } from './comments/domain/mg/comment-likes.entity';
 import { PostsLikesRepo } from './posts/infrastructure/posts-likes.repo';
 import { CommentsService } from './comments/application/comments.service';
 import { CommentsRepo } from './comments/infrastructure/pg/comments.repo';
@@ -23,11 +21,7 @@ import { CommentsLikesRepo } from './comments/infrastructure/pg/comments-likes.r
 import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: CommentLikes.name, schema: CommentLikesSchema }]),
-    AuthModule,
-    UsersModule,
-  ],
+  imports: [AuthModule, UsersModule],
   controllers: [BlogsController, PostsController, CommentsController],
   providers: [
     BlogsService,

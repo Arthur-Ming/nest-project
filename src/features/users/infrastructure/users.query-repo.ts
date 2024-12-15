@@ -1,18 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { userMapToOutput } from '../application/utils/user-map-to-output';
 import { UsersPaginationQueryParamsDto } from '../api/dto/input/users-pagination-query-params.dto';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../domain/users.entity';
 
 @Injectable()
 export class UsersQueryRepo {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(@InjectRepository(User) private usersRepository: Repository<User>) {}
 
   getTotalCount = async (queryParams: UsersPaginationQueryParamsDto) => {
-    const [{ count: totalCount }] = await this.dataSource.query(`
-    SELECT COUNT(*) FROM "Users"
-        WHERE "Users".email ILIKE '%${queryParams.searchEmailTerm}%' OR "Users".login ILIKE '%${queryParams.searchLoginTerm}%'`);
-    return Number(totalCount);
+    return await this.usersRepository
+      .createQueryBuilder('u')
+      .where('u.email ILIKE :e', { e: `%${queryParams.searchEmailTerm}%` })
+      .orWhere('u.login ILIKE :l', { l: `%${queryParams.searchLoginTerm}%` })
+      .getCount();
   };
 
   async findAll(queryParams: UsersPaginationQueryParamsDto) {
@@ -20,13 +22,17 @@ export class UsersQueryRepo {
     const limit = queryParams.pageSize;
     const d =
       queryParams.sortBy === 'createdAt' ? `"createdAt"` : `"${queryParams.sortBy}" COLLATE "C"`;
-    const users = await this.dataSource.query(`
-    SELECT * FROM "Users"
-          WHERE "Users".email ILIKE '%${queryParams.searchEmailTerm}%' OR "Users".login ILIKE '%${queryParams.searchLoginTerm}%'
-          ORDER BY ${d} ${queryParams.sortDirection}
-          OFFSET ${offSet}
-          LIMIT ${limit}
-          `);
+
+    const sortDirection = queryParams.sortDirection.toUpperCase() as 'ASC' | 'DESC';
+    const users = await this.usersRepository
+      .createQueryBuilder('u')
+      .where('u.email ILIKE :e', { e: `%${queryParams.searchEmailTerm}%` })
+      .orWhere('u.login ILIKE :l', { l: `%${queryParams.searchLoginTerm}%` })
+      .orderBy(d, sortDirection)
+      .offset(offSet)
+      .limit(limit)
+      .getMany();
+
     const totalCount = await this.getTotalCount(queryParams);
 
     return {
@@ -39,9 +45,9 @@ export class UsersQueryRepo {
   }
 
   async findById(userId: string) {
-    const [user] = await this.dataSource.query(`
-  SELECT * FROM "Users"
-  WHERE "Users".id='${userId}'`);
+    const user = await this.usersRepository.findOneBy({
+      id: userId,
+    });
     if (!user) return null;
     return userMapToOutput(user);
   }

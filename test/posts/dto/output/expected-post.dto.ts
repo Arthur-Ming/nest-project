@@ -1,5 +1,5 @@
 import { CreatePostDto } from '../input/create-post.dto';
-import { BlogOutputData } from '../../../../src/features/blogs/api/dto/output/blogs.output.model';
+import { BlogOutputData } from '../../../../src/features/blog-platform/blogs/api/dto/output/blogs.output.model';
 
 export class ExpectedPostDto {
   id = expect.any(String);

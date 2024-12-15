@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Session } from '../domain/session.entity';
 
 @Injectable()
 export class SessionQueryRepo {
@@ -8,32 +9,25 @@ export class SessionQueryRepo {
     return {
       ip: session.ip,
       title: session.deviceName,
-      lastActiveDate: new Date(session.iat * 1000).toISOString(),
+      lastActiveDate: new Date(Number(session.iat) * 1000).toISOString(),
       deviceId: session.id.toString(),
     };
   };
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
-
-  async getById(id: string) {
-    const [result = null] = await this.dataSource.query(
-      `SELECT * FROM "Sessions" as s
-     WHERE s.id='${id}'`
-    );
-    if (!result) return null;
-    return result;
-  }
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(Session) private sessionsRepository: Repository<Session>
+  ) {}
 
   async getAllUserSessions(deviceId: string) {
-    const [session = null] = await this.dataSource.query(
-      `SELECT * FROM "Sessions" as s
-     WHERE s.id='${deviceId}'`
-    );
-    if (!session) return null;
+    const session = await this.sessionsRepository.findOneBy({
+      id: deviceId,
+    });
 
-    const users = await this.dataSource.query(
-      `SELECT * FROM "Sessions" as s
-     WHERE s."userId"='${session.userId}'`
-    );
-    return users.map((i) => this.mapToOutput(i));
+    if (!session) return null;
+    const userSessions = await this.sessionsRepository.findBy({
+      userId: session.userId,
+    });
+
+    return userSessions.map((us) => this.mapToOutput(us));
   }
 }

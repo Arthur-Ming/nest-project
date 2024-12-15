@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { TestingModule } from './features/testing/testing.module';
 import { UsersModule } from './features/users/users.module';
 import { appSettings } from './settings/app-settings';
@@ -18,20 +17,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         limit: appSettings.api.RATE_LIMITING_LIMIT,
       },
     ]),
-    MongooseModule.forRoot(
-      appSettings.env.isTesting()
-        ? appSettings.api.MONGO_CONNECTION_URI_FOR_TESTS
-        : appSettings.api.MONGO_CONNECTION_URI
-    ),
+
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
       port: 5432,
       password: 'art',
       username: 'art',
-      entities: [],
-      database: 'BloggersPlatform',
+      // entities: [User, EmailConfirmation],
+      database: appSettings.env.isTesting() ? 'BloggersPlatform' : 'BloggersPlatform',
       synchronize: true,
+      autoLoadEntities: true,
       logging: true,
     }),
     MailerModule.forRoot({

@@ -1,5 +1,5 @@
-import { ObjectId } from 'mongodb';
+import { v4 as uuidv4 } from 'uuid';
 
 export function genDbId(): string {
-  return new ObjectId().toString();
+  return uuidv4().toString();
 }

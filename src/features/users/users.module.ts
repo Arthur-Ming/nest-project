@@ -8,8 +8,11 @@ import { IsUserExistConstraint } from './decorators/validate/is-user-exist';
 import { appSettings, AppSettings } from '../../settings/app-settings';
 import { IsUserExistByLoginConstraint } from './decorators/validate/is-user-exist-by-login';
 import { IsUserExistByEmailConstraint } from './decorators/validate/is-user-exist-by-email';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './domain/users.entity';
 
 @Module({
+  imports: [TypeOrmModule.forFeature([User])],
   controllers: [UsersController],
   providers: [
     UsersService,

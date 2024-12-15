@@ -1,64 +1,51 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { SessionEntity } from '../domain/session.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ISession, Session } from '../domain/session.entity';
 
 @Injectable()
 export class SessionRepo {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(@InjectRepository(Session) private sessionsRepository: Repository<Session>) {}
 
-  async add(dto: SessionEntity) {
-    const [{ id }] = await this.dataSource.query(`
-    INSERT INTO "Sessions" ("iat", "exp", "ip", "deviceName", "userId") 
-    VALUES ('${dto.iat}', '${dto.exp}', '${dto.ip}', '${dto.deviceName}', '${dto.userId}')
-    RETURNING id
-    `);
+  async add(dto: ISession) {
+    const s = await this.sessionsRepository.save({
+      iat: dto.iat,
+      exp: dto.exp,
+      ip: dto.ip,
+      deviceName: dto.deviceName,
+      userId: dto.userId,
+    });
 
-    return id;
+    return s.id;
   }
 
   async findById(id: string) {
-    const [result = null] = await this.dataSource.query(
-      `SELECT * FROM "Sessions" as s
-     WHERE s.id='${id}'`
-    );
-    if (!result) return null;
-    return result;
+    return await this.sessionsRepository.findOneBy({
+      id,
+    });
   }
 
-  async findAllByUserId(userId: string) {
-    const [result = null] = await this.dataSource.query(
-      `SELECT * FROM "Sessions" as s
-     WHERE s.userId='${userId}'`
-    );
-    if (!result) return null;
-    return result;
-  }
-
-  async update(sessionId: string, dto: Partial<SessionEntity>): Promise<boolean> {
-    const [, matchedCount] = await this.dataSource.query(
-      `UPDATE "Sessions" 
-             SET "exp" = ${dto.exp},
-             "iat" = ${dto.iat}
-       WHERE id = '${sessionId}'     
-             `
-    );
-    return matchedCount === 1;
+  async update(sessionId: string, dto: Partial<ISession>): Promise<boolean> {
+    const updateResult = await this.sessionsRepository.update(sessionId, {
+      exp: dto.exp,
+      iat: dto.iat,
+    });
+    return updateResult.affected === 1;
   }
 
   async remove(sessionId: string): Promise<boolean> {
-    const [, deleteResult] = await this.dataSource.query(`
-   DELETE FROM "Sessions"
-   WHERE id='${sessionId}'`);
+    const deleteResult = await this.sessionsRepository.delete(sessionId);
 
-    return deleteResult === 1;
+    return deleteResult.affected === 1;
   }
 
   removeExcludeCurrent = async (currentDeviceId: string) => {
-    const [, deleteResult] = await this.dataSource.query(`
-   DELETE FROM "Sessions"
-   WHERE id!='${currentDeviceId}'`);
+    const deleteResult = await this.sessionsRepository
+      .createQueryBuilder()
+      .delete()
+      .where('id != :e', { e: currentDeviceId })
+      .execute();
 
-    return deleteResult === 1;
+    return deleteResult.affected === 1;
   };
 }
