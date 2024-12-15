@@ -49,9 +49,9 @@ export class AuthService {
         to: dto.email, // list of receivers
         subject: 'Hello ✔', // Subject line
         html: ` <h1>Thank for your registration</h1>
-                <p>To finish registration please follow the link below:
-                <a href='https://somesite.com/confirm-email?code=${confirmationCode}'>complete registration</a>
-   </p>`,
+                 <p>To finish registration please follow the link below:
+                 <a href='https://somesite.com/confirm-email?code=${confirmationCode}'>complete registration</a>
+    </p>`,
       })
       .catch(() => {
         console.log('!!');
@@ -63,6 +63,8 @@ export class AuthService {
     if (!user) {
       return new InterlayerNotice(ResultStatusEnum.NotFound);
     }
+
+    await this.codeRecoveryRepo.deleteAllUserCodeRecoveries(user.id);
     const recoveryCode = await this.codeRecoveryRepo.add({
       userId: user.id,
     });
@@ -84,7 +86,11 @@ export class AuthService {
   }
   async registrationConfirmation(confirmCode: string) {
     const confirmation = await this.emailConfirmationRepo.findByConfirmationCode(confirmCode);
-    await this.emailConfirmationRepo.setConfirmedByUserId(confirmation.userId);
+
+    if (!confirmation) {
+      return null;
+    }
+    await this.emailConfirmationRepo.setConfirmedById(confirmation.id);
   }
   async registrationEmailResending(email: string) {
     const user = await this.usersService.findByEmail(email);
@@ -96,7 +102,7 @@ export class AuthService {
         minutes: 30,
       })
     );
-
+    await this.emailConfirmationRepo.deleteByUserId(user.id);
     const confirmationCode = await this.emailConfirmationRepo.add({
       userId: user.id.toString(),
       exp: expirationDate,
@@ -109,9 +115,9 @@ export class AuthService {
         to: email, // list of receivers
         subject: 'Hello ✔', // Subject line
         html: ` <h1>Thank for your registration</h1>
-                <p>To finish registration please follow the link below:
-                <a href='https://somesite.com/confirm-email?code=${confirmationCode}'>complete registration</a>
-   </p>`,
+                 <p>To finish registration please follow the link below:
+                 <a href='https://somesite.com/confirm-email?code=${confirmationCode}'>complete registration</a>
+    </p>`,
       })
       .catch(() => {
         console.log('!!');
@@ -207,7 +213,7 @@ export class AuthService {
 
   async newPassword(dto: NewPasswordDto) {
     const recoveryCode = await this.codeRecoveryRepo.findById(dto.recoveryCode);
-    console.log(recoveryCode);
+
     if (!recoveryCode) {
       return new InterlayerNotice(ResultStatusEnum.NotFound);
     }

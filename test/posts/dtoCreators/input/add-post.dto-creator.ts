@@ -1,5 +1,5 @@
-import { CreatePostDto } from '../../../../src/features/posts/api/dto/input/create-post.dto';
-import { CreatePostForSpecifiedBlogDto } from '../../../../src/features/posts/api/dto/input/create-post-for-specified-blog.dto';
+import { CreatePostForSpecifiedBlogDto } from '../../dto/input/create-post-for-specified-blog.dto';
+import { CreatePostDto } from '../../dto/input/create-post.dto';
 
 export const addPostDtoCreator = (
   blogId?: string

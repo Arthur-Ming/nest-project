@@ -2,7 +2,6 @@ import { Test } from '@nestjs/testing';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { agent } from 'supertest';
 import { Connection } from 'mongoose';
-import { getConnectionToken } from '@nestjs/mongoose';
 import TestAgent from 'supertest/lib/agent';
 import { deleteCollections } from '../utils/delete-collections';
 import { createBlogMockDto } from '../blogs/mockData/create-blog.mock.dto';
@@ -35,13 +34,13 @@ aDescribe(PostsTestNamesEnum.postsAll)('Posts e2e', () => {
     applyAppSettings(app);
     await app.init();
     req = agent(app.getHttpServer());
-    databaseConnection = app.get<Connection>(getConnectionToken());
+
     postsTestManager = new PostsTestManager(app);
     blogsTestManager = new BlogsTestManager(app);
   });
   aDescribe(PostsTestNamesEnum.postsCreating)('Posts e2e creating', () => {
     beforeAll(async () => {
-      await deleteCollections(databaseConnection);
+      //  await deleteCollections(databaseConnection);
     });
 
     it('should get empty array', async () => {

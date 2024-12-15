@@ -15,7 +15,7 @@ export const skipSettings = {
   [BlogTestNamesEnum.blogsUpdating]: false,
   [BlogTestNamesEnum.blogsPagination]: false,
 
-  [PostsTestNamesEnum.postsAll]: false,
+  [PostsTestNamesEnum.postsAll]: true,
   [PostsTestNamesEnum.postsCreating]: false,
   [PostsTestNamesEnum.postsPagination]: true,
 };

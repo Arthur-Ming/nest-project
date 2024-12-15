@@ -1,27 +1,32 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { CodeRecoveryEntity } from '../domain/code-recovery.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CodeRecovery, ICodeRecovery } from '../domain/code-recovery.entity';
 
 @Injectable()
 export class CodeRecoveryRepo {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(CodeRecovery) private codeRecoveryRepository: Repository<CodeRecovery>
+  ) {}
 
-  async add(dto: CodeRecoveryEntity) {
-    const [{ id }] = await this.dataSource.query(`
-    INSERT INTO "CodeRecovery" ("userId") 
-    VALUES ('${dto.userId}')
-    RETURNING id
-    `);
+  async add(dto: ICodeRecovery) {
+    const result = await this.codeRecoveryRepository.save({
+      userId: dto.userId,
+    });
 
-    return id;
+    return result.id;
+  }
+
+  async deleteAllUserCodeRecoveries(userId: string) {
+    const deleteResult = await this.codeRecoveryRepository.delete({
+      userId,
+    });
+
+    return deleteResult.affected === 1;
   }
   async findById(id: string) {
-    const [result = null] = await this.dataSource.query(
-      `SELECT * FROM "CodeRecovery" as e
-     WHERE e.id='${id}'`
-    );
-    if (!result) return null;
-    return result;
+    return await this.codeRecoveryRepository.findOneBy({
+      id,
+    });
   }
 }

@@ -1,80 +1,68 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '../domain/users.entity';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { IUser, User } from '../domain/users.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UsersRepo {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(@InjectRepository(User) private usersRepository: Repository<User>) {}
 
-  async add(user: User) {
-    const [{ id }] = await this.dataSource.query(`
-    INSERT INTO "Users" ("login", "password", "email") 
-    VALUES ('${user.login}', '${user.password}', '${user.email}')
-    RETURNING id
-    `);
+  async add(user: IUser) {
+    const u = await this.usersRepository.save({
+      email: user.email,
+      login: user.login,
+      password: user.password,
+    });
 
-    return id;
+    return u.id;
   }
 
   async remove(userId: string) {
-    const [, deleteResult] = await this.dataSource.query(`
-   DELETE FROM "Users"
-   WHERE id='${userId}'`);
+    const deleteResult = await this.usersRepository.delete(userId);
 
-    return deleteResult === 1;
+    return deleteResult.affected === 1;
   }
   async existsById(id: string) {
-    const [{ exists }] = await this.dataSource.query(`
-    SELECT EXISTS(SELECT * FROM "Users" WHERE id='${id}')
-    `);
-    return exists;
+    return await this.usersRepository.existsBy({
+      id,
+    });
   }
   async existsByLogin(login: string) {
-    const [{ exists }] = await this.dataSource.query(`
-    SELECT EXISTS(SELECT * FROM "Users" WHERE login='${login}')
-    `);
-    return exists;
+    return await this.usersRepository.existsBy({
+      login,
+    });
   }
 
   async existsByEmail(email: string) {
-    const [{ exists }] = await this.dataSource.query(`
-    SELECT EXISTS(SELECT * FROM "Users" WHERE email='${email}')
-    `);
-    return exists;
+    return await this.usersRepository.existsBy({
+      email,
+    });
   }
   async findByLoginOrEmail(loginOrEmail: string) {
-    const [user = null] = await this.dataSource.query(`
-       SELECT * FROM "Users" 
-       WHERE email='${loginOrEmail}' OR login='${loginOrEmail}'
-    `);
-    return user;
+    return await this.usersRepository.findOneBy([
+      {
+        email: loginOrEmail,
+      },
+      {
+        login: loginOrEmail,
+      },
+    ]);
   }
 
   async findByEmail(email: string) {
-    const [user = null] = await this.dataSource.query(`
-       SELECT * FROM "Users" 
-       WHERE email='${email}'
-    `);
-    return user;
+    return await this.usersRepository.findOneBy({
+      email,
+    });
   }
 
   async findById(userId: string) {
-    const [user = null] = await this.dataSource.query(`
-       SELECT * FROM "Users" 
-       WHERE id='${userId}'
-    `);
-    return user;
+    return await this.usersRepository.findOneBy({
+      id: userId,
+    });
   }
 
   async updatePassword(userId: string, newPasswordHash: string) {
-    const [, matchedCount] = await this.dataSource.query(
-      `UPDATE "Users" 
-             SET "password" = '${newPasswordHash}'
-       WHERE id = '${userId}'     
-             `
-    );
-
-    return matchedCount === 1;
+    const updateResult = await this.usersRepository.update(userId, { password: newPasswordHash });
+    return updateResult.affected === 1;
   }
 }

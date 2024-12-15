@@ -16,7 +16,6 @@ export class UsersService {
       password: hash,
       login: addUserModel.login,
       email: addUserModel.email,
-      createdAt: Number(new Date()),
     });
   }
   async updatePassword(userId: string, newPassword: string) {

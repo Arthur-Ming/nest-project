@@ -22,9 +22,7 @@ export class IsConfirmExistByEmailConstraint implements ValidatorConstraintInter
       return false;
     }
     const confirm = await this.emailConfirmationRepo.findByUserId(user.id.toString());
-    console.log('confirm');
-    console.log(confirm);
-    console.log(confirm.isConfirmed);
+
     if (!confirm || confirm.isConfirmed) {
       return false;
     }

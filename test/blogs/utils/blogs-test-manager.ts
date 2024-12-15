@@ -1,8 +1,9 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { CreateBlogDto } from '../../../src/features/blogs/api/dto/input/create-blog.dto';
+
 import { createdBlogModel } from '../models/created-blog.model';
-import { UpdateBlogDto } from '../../../src/features/blogs/api/dto/input/update-blog.dto';
+import { CreateBlogDto } from '../../../src/features/blog-platform/blogs/api/dto/input/create-blog.dto';
+import { UpdateBlogDto } from '../../../src/features/blog-platform/blogs/api/dto/input/update-blog.dto';
 
 export class BlogsTestManager {
   constructor(protected readonly app: INestApplication) {}
