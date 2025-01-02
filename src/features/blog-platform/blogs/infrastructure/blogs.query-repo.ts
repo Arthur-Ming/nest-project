@@ -1,18 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { blogsMapToOutput } from '../api/dto/output/blogs.output.model';
 import { BlogsPaginationQueryParamsDto } from '../api/dto/input/blogs-pagination-query-params.dto';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Blogs } from '../domain/blogs.entity';
 
 @Injectable()
 export class BlogsQueryRepo {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(Blogs) private blogsRepository: Repository<Blogs>
+  ) {}
 
   getTotalCount = async (queryParams: BlogsPaginationQueryParamsDto) => {
-    const [{ count: totalCount }] = await this.dataSource.query(`
-    SELECT COUNT(*) FROM "Blogs"
-        WHERE "Blogs".name ILIKE '%${queryParams.searchNameTerm}%'`);
-    return Number(totalCount);
+    return await this.blogsRepository
+      .createQueryBuilder('b')
+      .where('b.name ILIKE :e', { e: `%${queryParams.searchNameTerm}%` })
+      .getCount();
   };
 
   async findByQueryParams(queryParams: BlogsPaginationQueryParamsDto) {
@@ -20,28 +23,35 @@ export class BlogsQueryRepo {
     const limit = queryParams.pageSize;
     const d =
       queryParams.sortBy === 'createdAt' ? `"createdAt"` : `"${queryParams.sortBy}" COLLATE "C"`;
-    const blogs = await this.dataSource.query(`
-    SELECT * FROM "Blogs"
-          WHERE "Blogs".name ILIKE '%${queryParams.searchNameTerm}%'
-          ORDER BY ${d} ${queryParams.sortDirection}
-          OFFSET ${offSet}
-          LIMIT ${limit}
-          `);
+
     const totalCount = await this.getTotalCount(queryParams);
+    const sortDirection = queryParams.sortDirection.toUpperCase() as 'ASC' | 'DESC';
+
+    const blogs = await this.blogsRepository
+      .createQueryBuilder('b')
+      .select(['b.id', 'b.name', 'b.description', 'b.websiteUrl', 'b.createdAt', 'b.isMembership'])
+      .where('b.name ILIKE :e', { e: `%${queryParams.searchNameTerm}%` })
+      .orderBy(d, sortDirection)
+      .offset(offSet)
+      .limit(limit)
+      .getMany();
 
     return {
       pagesCount: Math.ceil(totalCount / queryParams.pageSize),
       page: queryParams.pageNumber,
       pageSize: queryParams.pageSize,
       totalCount: totalCount,
-      items: blogs.map((blog) => blogsMapToOutput(blog)),
+      items: blogs, //.map((blog) => blogsMapToOutput(blog)),
     };
   }
   async findById(blogId: string) {
-    const [blog] = await this.dataSource.query(`
-  SELECT * FROM "Blogs"
-  WHERE "Blogs".id='${blogId}'`);
+    const blog = await this.blogsRepository
+      .createQueryBuilder('b')
+      .select(['b.id', 'b.name', 'b.description', 'b.websiteUrl', 'b.createdAt', 'b.isMembership'])
+      .where('b.id = :id', { id: blogId })
+      .getOne();
+
     if (!blog) return null;
-    return blogsMapToOutput(blog);
+    return blog;
   }
 }

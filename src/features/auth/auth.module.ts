@@ -26,9 +26,7 @@ import { CodeRecovery } from './domain/code-recovery.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([EmailConfirmation]),
-    TypeOrmModule.forFeature([Session]),
-    TypeOrmModule.forFeature([CodeRecovery]),
+    TypeOrmModule.forFeature([EmailConfirmation, Session, CodeRecovery]),
     JwtModule.register({}),
     UsersModule,
     MailAdapterModule,

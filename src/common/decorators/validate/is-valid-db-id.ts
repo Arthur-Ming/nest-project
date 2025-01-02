@@ -1,6 +1,6 @@
 import { registerDecorator, ValidationOptions } from 'class-validator';
 import { NotFoundException } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
+import { validate as uuidValidate } from 'uuid';
 
 export function IsValidDbId(property?: string, validationOptions?: ValidationOptions) {
   return function (object: object, propertyName: string) {
@@ -11,12 +11,12 @@ export function IsValidDbId(property?: string, validationOptions?: ValidationOpt
       constraints: [property],
       options: validationOptions,
       validator: {
-        validate(value: any) {
-          const s = ObjectId.isValid(value);
-          if (!s) {
+        validate(value: string) {
+          const isValid = uuidValidate(value);
+          if (!isValid) {
             throw new NotFoundException('Not Found');
           }
-          return s;
+          return true;
         },
       },
     });

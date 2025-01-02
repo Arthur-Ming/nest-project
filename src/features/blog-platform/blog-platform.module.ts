@@ -19,9 +19,11 @@ import { BlogsQueryRepo } from './blogs/infrastructure/blogs.query-repo';
 import { BlogsRepo } from './blogs/infrastructure/blogs.repo';
 import { CommentsLikesRepo } from './comments/infrastructure/pg/comments-likes.repo';
 import { UsersModule } from '../users/users.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Blogs } from './blogs/domain/blogs.entity';
 
 @Module({
-  imports: [AuthModule, UsersModule],
+  imports: [TypeOrmModule.forFeature([Blogs]), AuthModule, UsersModule],
   controllers: [BlogsController, PostsController, CommentsController],
   providers: [
     BlogsService,

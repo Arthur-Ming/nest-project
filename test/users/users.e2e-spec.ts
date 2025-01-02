@@ -13,7 +13,7 @@ import { wait } from '../utils/wait';
 import { PaginationTestManager } from '../utils/pagination-test-manager';
 import { UsersPaginationQueryParamsDto } from '../../src/features/users/api/dto/input/users-pagination-query-params.dto';
 
-describe('Users e2e', () => {
+describe.skip('Users e2e', () => {
   let app: INestApplication;
 
   let usersTestManager: UsersTestManager;

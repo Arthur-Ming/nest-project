@@ -1,13 +1,13 @@
 import { IsBlogExist } from '../../../decorators/validate/is-blog-exist';
-import { IsUUID } from 'class-validator';
 import { IsPostExist } from '../../../../posts/decorators/validate/is-post-exist';
+import { IsValidDbId } from '../../../../../../common/decorators/validate/is-valid-db-id';
 
 export class PostForBlogByIdDto {
   @IsBlogExist()
-  @IsUUID()
+  @IsValidDbId()
   blogId: string;
 
   @IsPostExist()
-  @IsUUID()
+  @IsValidDbId()
   postId: string;
 }

@@ -12,17 +12,12 @@ import { PostsRepo } from '../../posts/infrastructure/posts.repo';
 @Injectable()
 export class BlogsService {
   constructor(
-    private blogsRepoPg: BlogsRepo,
-    private readonly postsRepo: PostsRepo,
+    private blogsRepo: BlogsRepo,
+    private postsRepo: PostsRepo,
     private postsService: PostsService
   ) {}
-  async addBlog(input: CreateBlogDto): Promise<InterlayerNotice<{ newBlogId: string }>> {
-    const newBlogId = await this.blogsRepoPg.add({
-      name: input.name,
-      websiteUrl: input.websiteUrl,
-      description: input.description,
-      isMembership: false,
-    });
+  async addBlog(createBlogDto: CreateBlogDto): Promise<InterlayerNotice<{ newBlogId: string }>> {
+    const newBlogId = await this.blogsRepo.add(createBlogDto);
     return new InterlayerNotice(ResultStatusEnum.Success, { newBlogId });
   }
 
@@ -34,7 +29,7 @@ export class BlogsService {
     return id;
   }
   async updateBlog(blogId: string, updateBlogDTO: UpdateBlogDto) {
-    await this.blogsRepoPg.update(blogId, updateBlogDTO);
+    await this.blogsRepo.update(blogId, updateBlogDTO);
   }
 
   async updatePost(blogId: string, postId: string, updatePostDTO: UpdatePostDto) {
@@ -51,6 +46,6 @@ export class BlogsService {
   }
 
   async deleteBlog(blogId: string) {
-    await this.blogsRepoPg.remove(blogId);
+    await this.blogsRepo.remove(blogId);
   }
 }
