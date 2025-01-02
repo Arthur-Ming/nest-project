@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Session } from '../domain/session.entity';
 
 @Injectable()
@@ -13,10 +13,7 @@ export class SessionQueryRepo {
       deviceId: session.id.toString(),
     };
   };
-  constructor(
-    @InjectDataSource() private dataSource: DataSource,
-    @InjectRepository(Session) private sessionsRepository: Repository<Session>
-  ) {}
+  constructor(@InjectRepository(Session) private sessionsRepository: Repository<Session>) {}
 
   async getAllUserSessions(deviceId: string) {
     const session = await this.sessionsRepository.findOneBy({

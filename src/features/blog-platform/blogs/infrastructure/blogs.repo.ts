@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Blogs } from '../domain/blogs.entity';
+import { Blog } from '../domain/blogs.entity';
 import { UpdateBlogDto } from '../api/dto/input/update-blog.dto';
 import { ICreateBlogDto } from '../api/dto/input/create-blog.dto';
 
 @Injectable()
 export class BlogsRepo {
-  constructor(@InjectRepository(Blogs) private blogsRepository: Repository<Blogs>) {}
+  constructor(@InjectRepository(Blog) private blogsRepository: Repository<Blog>) {}
 
   async add(blog: ICreateBlogDto) {
     const b = await this.blogsRepository.save({

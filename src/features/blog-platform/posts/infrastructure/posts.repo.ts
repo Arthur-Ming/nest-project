@@ -1,54 +1,54 @@
 import { Injectable } from '@nestjs/common';
 import { UpdatePostDto } from '../api/dto/input/update-post.dto';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { PostsEntity } from '../domain/posts.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Post } from '../domain/posts.entity';
+import { CreatePostDto } from '../api/dto/input/create-post.dto';
 
 @Injectable()
 export class PostsRepo {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(@InjectRepository(Post) private postsRepository: Repository<Post>) {}
 
-  async add(post: PostsEntity) {
-    const [{ id }] = await this.dataSource.query(`
-    INSERT INTO "Posts" ("title", "shortDescription", "content", "blogId") 
-    VALUES ('${post.title}', '${post.shortDescription}', '${post.content}', '${post.blogId}')
-    RETURNING id
-    `);
+  async add(post: CreatePostDto) {
+    const p = await this.postsRepository.save({
+      title: post.title,
+      shortDescription: post.shortDescription,
+      content: post.content,
+      blogId: post.blogId,
+    });
 
-    return id;
+    return p.id;
   }
 
   async update(blogId: string, postId: string, dto: UpdatePostDto): Promise<boolean> {
-    const [, matchedCount] = await this.dataSource.query(
-      `UPDATE "Posts" 
-             SET 
-             "title" = '${dto.title}',
-             "shortDescription" = '${dto.shortDescription}',
-             "content" = '${dto.content}'
-            WHERE id = '${postId}' AND "blogId"='${blogId}'    
-             `
+    const updateResult = await this.postsRepository.update(
+      { id: postId, blogId },
+      {
+        title: dto.title,
+        shortDescription: dto.shortDescription,
+        content: dto.content,
+      }
     );
-
-    return matchedCount === 1;
+    return updateResult.affected === 1;
   }
-  async remove(blogId: string, postIt: string) {
-    const [, deleteResult] = await this.dataSource.query(`
-   DELETE FROM "Posts"
-   WHERE id='${postIt}' AND "blogId"='${blogId}'`);
+  async remove(blogId: string, postId: string) {
+    const deleteResult = await this.postsRepository.delete({
+      id: postId,
+      blogId,
+    });
 
-    return deleteResult === 1;
+    return deleteResult.affected === 1;
   }
   async existsById(id: string) {
-    const [{ exists }] = await this.dataSource.query(`
-    SELECT EXISTS(SELECT * FROM "Posts" WHERE id='${id}')
-    `);
-    return exists;
+    return await this.postsRepository.existsBy({
+      id,
+    });
   }
 
   async existsForSpecificBlog(blogId: string, postId: string) {
-    const [{ exists }] = await this.dataSource.query(`
-    SELECT EXISTS(SELECT * FROM "Posts" as p WHERE p.id='${postId}' AND p."blogId"='${blogId}')
-    `);
-    return exists;
+    return await this.postsRepository.existsBy({
+      id: postId,
+      blogId,
+    });
   }
 }

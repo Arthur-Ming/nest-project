@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { BlogsPaginationQueryParamsDto } from '../api/dto/input/blogs-pagination-query-params.dto';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { Blogs } from '../domain/blogs.entity';
+import { Blog } from '../domain/blogs.entity';
 
 @Injectable()
 export class BlogsQueryRepo {
   constructor(
     @InjectDataSource() private dataSource: DataSource,
-    @InjectRepository(Blogs) private blogsRepository: Repository<Blogs>
+    @InjectRepository(Blog) private blogsRepository: Repository<Blog>
   ) {}
 
   getTotalCount = async (queryParams: BlogsPaginationQueryParamsDto) => {

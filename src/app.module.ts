@@ -28,7 +28,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       database: appSettings.env.isTesting() ? 'BloggersPlatform' : 'BloggersPlatform',
       synchronize: true,
       autoLoadEntities: true,
-      logging: false,
+      logging: true,
     }),
     MailerModule.forRoot({
       transport: {

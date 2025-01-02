@@ -1,7 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Post } from '../../posts/domain/posts.entity';
 
 @Entity('blogs')
-export class Blogs {
+export class Blog {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
 
@@ -19,4 +20,7 @@ export class Blogs {
 
   @Column()
   public isMembership: boolean;
+
+  @OneToMany(() => Post, (p) => p.blog)
+  posts: Post[];
 }

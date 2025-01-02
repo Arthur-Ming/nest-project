@@ -52,8 +52,7 @@ export class PostsController {
     @ExtractAccessToken(DecodeJwtTokenPipe) payload: AccessTokenPayloadDto | null
   ) {
     const userId = payload ? payload.userId : null;
-    console.log('userId');
-    console.log(userId);
+
     return await this.postsQueryRepo.findById(params.id, userId);
   }
 
