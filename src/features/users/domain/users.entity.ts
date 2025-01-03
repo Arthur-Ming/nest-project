@@ -3,10 +3,6 @@ import { EmailConfirmation } from '../../auth/domain/email-confirmation.entity';
 import { Session } from '../../auth/domain/session.entity';
 import { CodeRecovery } from '../../auth/domain/code-recovery.entity';
 
-export interface ILogin {
-  login: string;
-  password: string;
-}
 export interface IUser {
   email: string;
   login: string;

@@ -15,13 +15,8 @@ export class PostsService {
     private readonly commentsService: CommentsService
   ) {}
 
-  async addPost(dto: CreatePostDto): Promise<{ id: string }> {
-    const addedPostId = await this.postsRepoPg.add({
-      title: dto.title,
-      shortDescription: dto.shortDescription,
-      content: dto.content,
-      blogId: dto.blogId,
-    });
+  async addPost(dto: CreatePostDto) /*: Promise<{ id: string }>*/ {
+    const addedPostId = await this.postsRepoPg.add(dto);
 
     return { id: addedPostId };
   }

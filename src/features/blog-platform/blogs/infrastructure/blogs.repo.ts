@@ -1,48 +1,42 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { BlogsEntity } from '../domain/blogs.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Blog } from '../domain/blogs.entity';
 import { UpdateBlogDto } from '../api/dto/input/update-blog.dto';
+import { ICreateBlogDto } from '../api/dto/input/create-blog.dto';
 
 @Injectable()
 export class BlogsRepo {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(@InjectRepository(Blog) private blogsRepository: Repository<Blog>) {}
 
-  async add(blog: BlogsEntity) {
-    const [{ id }] = await this.dataSource.query(`
-    INSERT INTO "Blogs" ("name", "description", "websiteUrl", "isMembership") 
-    VALUES ('${blog.name}', '${blog.description}', '${blog.websiteUrl}', '${blog.isMembership}')
-    RETURNING id
-    `);
+  async add(blog: ICreateBlogDto) {
+    const b = await this.blogsRepository.save({
+      name: blog.name,
+      description: blog.description,
+      websiteUrl: blog.websiteUrl,
+      isMembership: false,
+    });
 
-    return id;
+    return b.id;
   }
 
   async existsById(id: string) {
-    const [{ exists }] = await this.dataSource.query(`
-    SELECT EXISTS(SELECT * FROM "Blogs" WHERE id='${id}')
-    `);
-    return exists;
+    return await this.blogsRepository.existsBy({
+      id,
+    });
   }
 
   async update(blogId: string, dto: UpdateBlogDto): Promise<boolean> {
-    const [, matchedCount] = await this.dataSource.query(
-      `UPDATE "Blogs" 
-             SET 
-             "name" = '${dto.name}',
-             "description" = '${dto.description}',
-             "websiteUrl" = '${dto.websiteUrl}'
-       WHERE id = '${blogId}'     
-             `
-    );
-
-    return matchedCount === 1;
+    const updateResult = await this.blogsRepository.update(blogId, {
+      name: dto.name,
+      description: dto.description,
+      websiteUrl: dto.websiteUrl,
+    });
+    return updateResult.affected === 1;
   }
   async remove(blogId: string) {
-    const [, deleteResult] = await this.dataSource.query(`
-   DELETE FROM "Blogs"
-   WHERE id='${blogId}'`);
+    const deleteResult = await this.blogsRepository.delete(blogId);
 
-    return deleteResult === 1;
+    return deleteResult.affected === 1;
   }
 }

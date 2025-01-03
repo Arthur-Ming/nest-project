@@ -34,7 +34,7 @@ import { PostForBlogByIdDto } from './dto/input/post-for-blog-by-id.dto';
 export class BlogsController {
   constructor(
     private blogsService: BlogsService,
-    private blogsQueryRepoPg: BlogsQueryRepo,
+    private blogsQueryRepo: BlogsQueryRepo,
     private postsQueryRepoPg: PostsQueryRepo
   ) {}
   @Get('blogs')
@@ -42,13 +42,13 @@ export class BlogsController {
     @Query()
     queryParams: BlogsPaginationQueryParamsDto
   ) {
-    return this.blogsQueryRepoPg.findByQueryParams(queryParams);
+    return this.blogsQueryRepo.findByQueryParams(queryParams);
   }
 
   @Get('blogs/:blogId')
   @HttpCode(HttpStatus.OK)
   async getBlogById(@Param() params: BlogByIdDto) {
-    return await this.blogsQueryRepoPg.findById(params.blogId);
+    return await this.blogsQueryRepo.findById(params.blogId);
   }
 
   @Get('blogs/:blogId/posts')
@@ -69,7 +69,7 @@ export class BlogsController {
     @Query()
     queryParams: BlogsPaginationQueryParamsDto
   ) {
-    return this.blogsQueryRepoPg.findByQueryParams(queryParams);
+    return this.blogsQueryRepo.findByQueryParams(queryParams);
   }
 
   @UseGuards(BasicAuthGuard)
@@ -78,7 +78,7 @@ export class BlogsController {
   async createBlog(@Body() createBlogDto: CreateBlogDto) {
     const result = await this.blogsService.addBlog(createBlogDto);
     if (result.status === ResultStatusEnum.Success) {
-      return await this.blogsQueryRepoPg.findById(result.getData().newBlogId);
+      return await this.blogsQueryRepo.findById(result.getData().newBlogId);
     }
   }
 

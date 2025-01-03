@@ -8,14 +8,14 @@ export const skipSettings = {
   [AuthTestNamesEnum.authRegistrationRateLimiting]: false,
   [AuthTestNamesEnum.authUserLogin]: false,
 
-  [BlogTestNamesEnum.blogsAll]: true,
+  [BlogTestNamesEnum.blogsAll]: false,
   [BlogTestNamesEnum.blogsReading]: false,
   [BlogTestNamesEnum.blogsCreating]: false,
   [BlogTestNamesEnum.blogsDeleting]: false,
   [BlogTestNamesEnum.blogsUpdating]: false,
-  [BlogTestNamesEnum.blogsPagination]: false,
+  [BlogTestNamesEnum.blogsPagination]: true,
 
   [PostsTestNamesEnum.postsAll]: true,
-  [PostsTestNamesEnum.postsCreating]: false,
+  [PostsTestNamesEnum.postsCreating]: true,
   [PostsTestNamesEnum.postsPagination]: true,
 };

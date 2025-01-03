@@ -1,14 +1,26 @@
-import { Entity } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Post } from '../../posts/domain/posts.entity';
 
-@Entity()
-export class BlogsEntity {
-  name: string;
+@Entity('blogs')
+export class Blog {
+  @PrimaryGeneratedColumn('uuid')
+  public id: string;
 
-  description: string;
+  @Column()
+  public name: string;
 
-  websiteUrl: string;
+  @Column()
+  public description: string;
 
-  createdAt?: Date;
+  @Column()
+  public websiteUrl: string;
 
-  isMembership: boolean;
+  @Column({ type: 'timestamp without time zone', default: () => 'CURRENT_TIMESTAMP' })
+  public createdAt: string;
+
+  @Column()
+  public isMembership: boolean;
+
+  @OneToMany(() => Post, (p) => p.blog)
+  posts: Post[];
 }

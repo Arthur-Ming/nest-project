@@ -1,129 +1,52 @@
 import { Injectable } from '@nestjs/common';
-import { LikeStatus } from '../api/dto/output/post.output.model';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { PostsPaginationQueryParamsDto } from '../api/dto/input/posts-pagination-query-params.dto';
-
-const getMyLikeStatus = (
-  likeAuthorId: string | null,
-  requestUserId: string | null,
-  likeStatus: LikeStatus
-): LikeStatus => {
-  if (!requestUserId) {
-    return LikeStatus.None;
-  }
-  console.log('likeAuthorId');
-  console.log(likeAuthorId);
-  console.log('requestUserId');
-  console.log(requestUserId);
-  if (likeAuthorId === requestUserId) {
-    return likeStatus;
-  }
-
-  return LikeStatus.None;
-};
+import { Post } from '../domain/posts.entity';
 
 @Injectable()
 export class PostsQueryRepo {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(@InjectRepository(Post) private postsRepository: Repository<Post>) {}
 
   private mapToOutput = (
-    posts: any, //PostDocument & { blogName: string }
-    requestUserId: string | null
+    post: Post
+    // requestUserId: string | null
   ) /*: WithLikesInfo<PostOutputModel> */ => {
-    const result = {};
-
-    posts.forEach((post) => {
-      if (!result[post.id]) {
-        result[post.id] = {
-          id: post.id.toString(),
-          title: post.title,
-          shortDescription: post.shortDescription,
-          content: post.content,
-          blogId: post.blogId.toString(),
-          blogName: post.blogName,
-          createdAt: post.createdAt.toISOString(),
-          extendedLikesInfo: {
-            likesCount: post.likeStatus === LikeStatus.Like ? 1 : 0,
-            dislikesCount: post.likeStatus === LikeStatus.Dislike ? 1 : 0,
-            myStatus: getMyLikeStatus(post.likeAuthorId, requestUserId, post.likeStatus),
-            newestLikes:
-              post.likeId && post.likeStatus === LikeStatus.Like
-                ? [
-                    {
-                      addedAt: post.likeCreatedAt,
-                      userId: post.likeAuthorId,
-                      login: post.likeAuthorLogin,
-                    },
-                  ]
-                : [],
-          },
-        };
-      } else {
-        result[post.id].extendedLikesInfo.likesCount =
-          result[post.id].extendedLikesInfo.likesCount +
-          (post.likeStatus === LikeStatus.Like ? 1 : 0);
-
-        result[post.id].extendedLikesInfo.dislikesCount =
-          result[post.id].extendedLikesInfo.dislikesCount +
-          (post.likeStatus === LikeStatus.Dislike ? 1 : 0);
-
-        result[post.id].extendedLikesInfo.myStatus =
-          result[post.id].extendedLikesInfo.myStatus === LikeStatus.None
-            ? getMyLikeStatus(post.likeAuthorId, requestUserId, post.likeStatus)
-            : result[post.id].extendedLikesInfo.myStatus;
-
-        post.likeId &&
-          post.likeStatus === LikeStatus.Like &&
-          result[post.id].extendedLikesInfo.newestLikes.push({
-            addedAt: post.likeCreatedAt,
-            userId: post.likeAuthorId,
-            login: post.likeAuthorLogin,
-          });
-      }
-    });
-    return Object.values(result).map((item: any) => ({
-      ...item,
+    return {
+      id: post.id,
+      title: post.title,
+      shortDescription: post.shortDescription,
+      content: post.content,
+      blogId: post.blogId,
+      blogName: post.blog.name,
+      createdAt: post.createdAt,
       extendedLikesInfo: {
-        ...item.extendedLikesInfo,
-        newestLikes: item.extendedLikesInfo.newestLikes
-          .sort((a, b) => b.addedAt - a.addedAt)
-          .slice(0, 3),
+        likesCount: 0,
+        dislikesCount: 0,
+        myStatus: 'None',
+        newestLikes: [],
       },
-    }));
+    };
   };
   getTotalCount = async (blogId: string | null) => {
     if (!blogId) {
-      const [{ count: totalCount }] = await this.dataSource.query(`
-    SELECT COUNT(*) FROM "Posts" as p
-      `);
-      return Number(totalCount);
+      return await this.postsRepository.createQueryBuilder('p').getCount();
     }
-
-    const [{ count: totalCount }] = await this.dataSource.query(`
-    SELECT COUNT(*) FROM "Posts" as p
-        WHERE p."blogId" = '${blogId}'`);
-    return Number(totalCount);
+    return await this.postsRepository
+      .createQueryBuilder('p')
+      .where('p.blogId = :blogId', { blogId })
+      .getCount();
   };
 
   async findById(postId: string, requestUserId: string | null) {
-    const post = await this.dataSource.query(`
-  SELECT 
-  p.*, 
-  b.name as "blogName",
-  pl.id as "likeId",
-  pl.status as "likeStatus", 
-  pl."authorId" as "likeAuthorId", 
-  pl."createdAt" as "likeCreatedAt",
-  u.login as "likeAuthorLogin"
-  FROM "Posts" as p
-  JOIN "Blogs" as b ON p."blogId" =b.id
-  LEFT JOIN "PostLikes" as pl ON pl."postId" = p.id
-  LEFT JOIN "Users" as u ON pl."authorId" = u.id
-  WHERE p.id='${postId}'`);
-    if (!post) return null;
+    const post = await this.postsRepository
+      .createQueryBuilder('p')
+      .leftJoinAndSelect('p.blog', 'b')
+      .where('p.id = :id', { id: postId })
+      .getOne();
 
-    return this.mapToOutput(post, requestUserId)[0];
+    if (!post) return null;
+    return this.mapToOutput(post);
   }
 
   async findAll(
@@ -137,38 +60,42 @@ export class PostsQueryRepo {
     let d =
       queryParams.sortBy === 'createdAt' ? `"createdAt"` : `"${queryParams.sortBy}" COLLATE "C"`;
     d = d === `"blogName" COLLATE "C"` ? 'b.name' : `p.${d}`;
-    const byBlogId = `AND p."blogId"='${blogId}'`;
-    const posts = await this.dataSource.query(`
-    SELECT p.*, 
-    b.name as "blogName", 
-    pl.id as "likeId",
-    pl.status as "likeStatus", 
-    pl."authorId" as "likeAuthorId", 
-    pl."createdAt" as "likeCreatedAt",
-    u.login as "likeAuthorLogin"
-    FROM (SELECT p.* FROM "Posts" as p
-          JOIN "Blogs" as b ON p."blogId" =b.id
-          WHERE 
-             p.title ILIKE '%${queryParams.searchNameTerm}%'
-             ${blogId ? byBlogId : ''}
-          ORDER BY ${d} ${queryParams.sortDirection}
-          OFFSET ${offSet}
-          LIMIT ${limit}
-    ) as p
-          JOIN "Blogs" as b ON p."blogId" =b.id
-          LEFT JOIN "PostLikes" as pl ON pl."postId" = p.id
-          LEFT JOIN "Users" as u ON pl."authorId" = u.id
-          ORDER BY ${d} ${queryParams.sortDirection}
-          
-          
-    `);
+    const sortDirection = queryParams.sortDirection.toUpperCase() as 'ASC' | 'DESC';
+
+    if (blogId) {
+      const posts = await this.postsRepository
+        .createQueryBuilder('p')
+        .leftJoinAndSelect('p.blog', 'b')
+        .where('p.title ILIKE :title', { title: `%${queryParams.searchNameTerm}%` })
+        .andWhere('p.blogId = :blogId', { blogId })
+        .orderBy(d, sortDirection)
+        .offset(offSet)
+        .limit(limit)
+        .getMany();
+
+      return {
+        pagesCount: Math.ceil(totalCount / queryParams.pageSize),
+        page: queryParams.pageNumber,
+        pageSize: queryParams.pageSize,
+        totalCount: totalCount,
+        items: posts.map((p) => this.mapToOutput(p /*, requestUserId*/)),
+      };
+    }
+    const posts = await this.postsRepository
+      .createQueryBuilder('p')
+      .leftJoinAndSelect('p.blog', 'b')
+      .where('p.title ILIKE :title', { title: `%${queryParams.searchNameTerm}%` })
+      .orderBy(d, sortDirection)
+      .offset(offSet)
+      .limit(limit)
+      .getMany();
 
     return {
       pagesCount: Math.ceil(totalCount / queryParams.pageSize),
       page: queryParams.pageNumber,
       pageSize: queryParams.pageSize,
       totalCount: totalCount,
-      items: this.mapToOutput(posts, requestUserId),
+      items: posts.map((p) => this.mapToOutput(p /*, requestUserId*/)),
     };
   }
 }

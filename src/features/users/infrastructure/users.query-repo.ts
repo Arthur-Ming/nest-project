@@ -48,6 +48,7 @@ export class UsersQueryRepo {
     const user = await this.usersRepository.findOneBy({
       id: userId,
     });
+
     if (!user) return null;
     return userMapToOutput(user);
   }

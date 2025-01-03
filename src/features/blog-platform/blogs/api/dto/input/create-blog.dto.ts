@@ -6,7 +6,13 @@ export enum CreateBlogFields {
   description = 'description',
   websiteUrl = 'websiteUrl',
 }
-export class CreateBlogDto {
+
+export interface ICreateBlogDto {
+  name: string;
+  description: string;
+  websiteUrl: string;
+}
+export class CreateBlogDto implements ICreateBlogDto {
   @Trim()
   @Length(3, 15)
   @IsString()

@@ -17,6 +17,7 @@ import { CreatePostForSpecifiedBlogDto } from './dto/input/create-post-for-speci
 import { BlogsTestManager } from '../blogs/utils/blogs-test-manager';
 import { PostsTestManager } from './utils/posts-test-manager';
 import { UpdatePostDto } from './dto/input/update-post.dto';
+import { correctBasicAuthCredentials } from '../users/constants/credentials';
 
 aDescribe(PostsTestNamesEnum.postsAll)('Posts e2e', () => {
   let app: INestApplication;
@@ -49,7 +50,10 @@ aDescribe(PostsTestNamesEnum.postsAll)('Posts e2e', () => {
     });
 
     it('should create entity with correct input data', async function () {
-      const { body: createdBlog } = await blogsTestManager.createBlog(createBlogMockDto);
+      const { body: createdBlog } = await blogsTestManager.createBlog(
+        createBlogMockDto,
+        correctBasicAuthCredentials
+      );
 
       const createPostDto = new CreatePostForSpecifiedBlogDto(createdBlog.id);
 

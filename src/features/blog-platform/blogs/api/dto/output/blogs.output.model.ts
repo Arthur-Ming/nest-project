@@ -13,7 +13,7 @@ export const blogsMapToOutput = (dbBlog: any): BlogOutputData => {
     name: dbBlog.name,
     description: dbBlog.description,
     websiteUrl: dbBlog.websiteUrl,
-    createdAt: dbBlog.createdAt.toISOString(),
+    createdAt: dbBlog.createdAt,
     isMembership: dbBlog.isMembership,
   };
 };
