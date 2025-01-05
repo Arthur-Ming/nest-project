@@ -2,6 +2,7 @@ import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typ
 import { EmailConfirmation } from '../../auth/domain/email-confirmation.entity';
 import { Session } from '../../auth/domain/session.entity';
 import { CodeRecovery } from '../../auth/domain/code-recovery.entity';
+import { PostsLikes } from '../../blog-platform/posts/domain/posts-likes.entity';
 
 export interface IUser {
   email: string;
@@ -34,4 +35,7 @@ export class User {
 
   @OneToMany(() => Session, (s) => s.user)
   sessions: Session[];
+
+  @OneToMany(() => PostsLikes, (pl) => pl.post)
+  posts_likes: PostsLikes[];
 }

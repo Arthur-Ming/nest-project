@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Blog } from '../../blogs/domain/blogs.entity';
+import { PostsLikes } from './posts-likes.entity';
 
 @Entity('posts')
 export class Post {
@@ -7,16 +8,16 @@ export class Post {
   public id: string;
 
   @Column()
-  title: string;
+  public title: string;
 
   @Column()
-  shortDescription: string;
+  public shortDescription: string;
 
   @Column()
-  content: string;
+  public content: string;
 
   @Column({ type: 'timestamp without time zone', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: string;
+  public createdAt: string;
 
   @ManyToOne(() => Blog, (b) => b.posts, {
     onDelete: 'CASCADE',
@@ -28,4 +29,7 @@ export class Post {
 
   @Column({ nullable: false })
   blogId: string;
+
+  @OneToMany(() => PostsLikes, (pl) => pl.post)
+  likes: PostsLikes[];
 }
