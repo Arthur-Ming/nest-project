@@ -24,8 +24,9 @@ import { CommentsPaginationQueryParamsDto } from '../../comments/api/dto/input/c
 import { CreateCommentDto } from '../../comments/api/dto/input/create-comment.dto';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 import { CurrentUserId } from '../../../auth/decorators/current-user';
-import { PostsQueryRepo } from '../infrastructure/posts.query-repo';
+import { IPostOutputMap, PostsQueryRepo } from '../infrastructure/posts.query-repo';
 import { UsersService } from '../../../users/application/users.service';
+import { Pagination } from '../../../../common/types';
 
 @SkipThrottle()
 @Controller('posts')
@@ -36,12 +37,13 @@ export class PostsController {
     private commentsQueryRepo: CommentsQueryRepo,
     private usersService: UsersService
   ) {}
+
   @Get()
   async getAll(
     @ExtractAccessToken(DecodeJwtTokenPipe) payload: AccessTokenPayloadDto | null,
     @Query()
     queryParams: PostsPaginationQueryParamsDto
-  ) {
+  ): Promise<Pagination<IPostOutputMap[]>> {
     const userId = payload ? payload.userId : null;
     return await this.postsQueryRepo.findAll(queryParams, userId, null);
   }
