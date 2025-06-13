@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Blog } from '../../blogs/domain/blogs.entity';
 import { PostsLikes } from './posts-likes.entity';
+import { Comment } from '../../comments/domain/pg/comments.entity';
 
 @Entity('posts')
 export class Post {
@@ -32,4 +33,7 @@ export class Post {
 
   @OneToMany(() => PostsLikes, (pl) => pl.post)
   likes: PostsLikes[];
+
+  @OneToMany(() => Comment, (c) => c.post)
+  comments: Comment[];
 }

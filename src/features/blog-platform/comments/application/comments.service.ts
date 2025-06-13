@@ -12,12 +12,7 @@ export class CommentsService {
     private readonly commentLikesRepo: CommentsLikesRepo
   ) {}
   async createComment(dto: CreateCommentDto, userId: string, postId: string) {
-    const commentId = await this.commentsRepo.add({
-      content: dto.content,
-      postId: postId,
-      userId: userId,
-    });
-    return commentId;
+    return await this.commentsRepo.add(postId, userId, dto);
   }
 
   async updateComment(id: string, updateCommentDto: UpdateCommentDto) {
@@ -28,11 +23,7 @@ export class CommentsService {
     return await this.commentsRepo.removeById(id);
   }
   async likeComment(authorId: string, commentId: string, status: LikesStatusEnum) {
-    await this.commentLikesRepo.put({
-      authorId,
-      commentId,
-      status,
-    });
+    await this.commentLikesRepo.put(authorId, commentId, status);
   }
 
   async isOwnComment(commentId: string, userId: string) {
@@ -40,6 +31,6 @@ export class CommentsService {
     if (!comment) {
       return false;
     }
-    return comment.userId.toString() === userId;
+    return comment.authorId.toString() === userId;
   }
 }

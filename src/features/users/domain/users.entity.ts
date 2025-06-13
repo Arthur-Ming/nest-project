@@ -3,6 +3,8 @@ import { EmailConfirmation } from '../../auth/domain/email-confirmation.entity';
 import { Session } from '../../auth/domain/session.entity';
 import { CodeRecovery } from '../../auth/domain/code-recovery.entity';
 import { PostsLikes } from '../../blog-platform/posts/domain/posts-likes.entity';
+import { Comment } from '../../blog-platform/comments/domain/pg/comments.entity';
+import { CommentLike } from '../../blog-platform/comments/domain/pg/comment-likes.entity';
 
 export interface IUser {
   email: string;
@@ -36,6 +38,12 @@ export class User {
   @OneToMany(() => Session, (s) => s.user)
   sessions: Session[];
 
-  @OneToMany(() => PostsLikes, (pl) => pl.post)
+  @OneToMany(() => PostsLikes, (pl) => pl.author)
   posts_likes: PostsLikes[];
+
+  @OneToMany(() => Comment, (c) => c.author)
+  comments: Comment[];
+
+  @OneToMany(() => Comment, (c) => c.author)
+  comment_likes: CommentLike[];
 }

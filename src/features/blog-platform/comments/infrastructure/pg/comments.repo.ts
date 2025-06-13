@@ -1,56 +1,51 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { CommentsEntity } from '../../domain/pg/comments.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Comment } from '../../domain/pg/comments.entity';
 import { UpdateCommentDto } from '../../api/dto/input/update-comment.dto';
+import { CreateCommentDto } from '../../api/dto/input/create-comment.dto';
 
 @Injectable()
 export class CommentsRepo {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(@InjectRepository(Comment) private commentsRepository: Repository<Comment>) {}
 
-  async add(comment: CommentsEntity) {
-    const query = `
-     INSERT INTO "Comments" ("content", "userId", "postId") 
-    VALUES ('${comment.content}', '${comment.userId}', '${comment.postId}')
-    RETURNING id
-    `;
-    const [{ id }] = await this.dataSource.query(query);
-    return id;
+  async add(postId: string, authorId: string, dto: CreateCommentDto) {
+    const c = await this.commentsRepository.save({
+      content: dto.content,
+      authorId,
+      postId,
+    });
+
+    return c.id;
   }
 
   async update(commentId: string, dto: UpdateCommentDto): Promise<boolean> {
-    const [, matchedCount] = await this.dataSource.query(
-      `UPDATE "Comments" 
-             SET 
-             "content" = '${dto.content}'
-             WHERE id = '${commentId}'    
-             `
+    const updateResult = await this.commentsRepository.update(
+      { id: commentId },
+      {
+        content: dto.content,
+      }
     );
-
-    return matchedCount === 1;
+    return updateResult.affected === 1;
   }
 
   async removeById(id: string) {
-    const [, deleteResult] = await this.dataSource.query(`
-   DELETE FROM "Comments"
-   WHERE id='${id}'`);
+    const deleteResult = await this.commentsRepository.delete({
+      id,
+    });
 
-    return deleteResult === 1;
+    return deleteResult.affected === 1;
   }
 
   async getById(id: string) {
-    const [comment] = await this.dataSource.query(`
-  SELECT c.* FROM "Comments" as c
-  WHERE c.id='${id}'`);
-    if (!comment) return null;
-
-    return comment;
+    return await this.commentsRepository.findOneBy({
+      id,
+    });
   }
 
   async existsById(id: string) {
-    const [{ exists }] = await this.dataSource.query(`
-    SELECT EXISTS(SELECT * FROM "Comments" WHERE id='${id}')
-    `);
-    return exists;
+    return await this.commentsRepository.existsBy({
+      id,
+    });
   }
 }

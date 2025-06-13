@@ -15,5 +15,8 @@ export class TestingController {
     await this.dataSource.query(`
     DELETE FROM "blogs"
             `);
+    await this.dataSource.query(`
+    DELETE FROM "comments"
+            `);
   }
 }

@@ -70,8 +70,8 @@ export class PostsQueryRepo {
       blogName: post.blog.name,
       createdAt: post.createdAt,
       extendedLikesInfo: {
-        likesCount: postLikesCount ? postLikesCount.likesCount : 0,
-        dislikesCount: postLikesCount ? postLikesCount.dislikesCount : 0,
+        likesCount: Number(postLikesCount ? postLikesCount.likesCount : 0),
+        dislikesCount: Number(postLikesCount ? postLikesCount.dislikesCount : 0),
         myStatus: myStatus,
         newestLikes: postLikes
           ? postLikes.map((pl) => ({
@@ -204,7 +204,7 @@ export class PostsQueryRepo {
 
     if (!post) return null;
 
-    const [postLikesCount] = await this.getPostLikesCount([postId]);
+    const [postLikesCount = null] = await this.getPostLikesCount([postId]);
 
     const postLikes = await this.getPostLikesForOne(postId);
 
@@ -244,11 +244,11 @@ export class PostsQueryRepo {
 
     const postLikesCount = await this.getPostLikesCount(postIds);
 
+    const postLikesCountMap = this.mapPostLikesCount(postLikesCount);
+
     const myPostLikeStatuses = await this.getMyPostLikeStatuses(requestUserId, postIds);
 
     const myPostLikeStatusesMap = this.mapMyPostLikeStatuses(myPostLikeStatuses);
-
-    const postLikesCountMap = this.mapPostLikesCount(postLikesCount);
 
     const postsLikes = await this.getPostLikesForMany(postIds);
 
